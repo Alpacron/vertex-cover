@@ -13,7 +13,7 @@ export default function App() {
     const connectGraph = () => {
         fetch(port + '/connect', {
             method: "PUT",
-            body: response
+            body: JSON.stringify(response)
         }).then(res => res.json())
             .then(response => {
                 if(response.graph !== undefined) {
