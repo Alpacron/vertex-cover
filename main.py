@@ -7,11 +7,7 @@ from pydantic import BaseModel
 from typing import Any
 
 app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['POST', 'GET'], allow_headers=["*"])
-
-@app.get("/")
-def root():
-    return {"Hello": "World"}
+app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['POST', 'PUT'], allow_headers=["*"])
 
 class GenerateItem(BaseModel):
     vertices: int
@@ -27,8 +23,8 @@ def generate(item: GenerateItem):
 class UpdateItem(BaseModel):
     graph: Any
 
-@app.put("/update")
-def update(g: UpdateItem):
+@app.put("/connect")
+def connect(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_random_vertices()
     return graph
