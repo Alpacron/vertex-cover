@@ -1,6 +1,9 @@
 * {
     box-sizing: border-box;
 }
+svg {
+    border: 1px solid gray;
+}
 .container {
     margin: 4px;
     overflow: hidden;
