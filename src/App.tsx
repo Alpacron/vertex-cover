@@ -10,8 +10,8 @@ export default function App() {
     const [response, setResponse] = useState(null);
     const [data, setData] = useState<GraphData<any, any>>({nodes: [{id: 0}, {id: 1}], links: [{source: 0, target: 1}]});
 
-    const updateGraph = () => {
-        fetch(port + '/update', {
+    const connectGraph = () => {
+        fetch(port + '/connect', {
             method: "PUT",
             body: response
         }).then(res => res.json())
@@ -86,7 +86,7 @@ export default function App() {
                 <FormGroup>
                     <Button
                         rightIcon="arrow-right"
-                        onClick={updateGraph}
+                        onClick={connectGraph}
                     >Connect</Button>
                 </FormGroup>
                 <FormGroup>
@@ -100,6 +100,7 @@ export default function App() {
                 <Graph
                     id="graph-id"
                     data={data}
+                    config={{staticGraph: false}}
                 />
             </div>
         </div>
