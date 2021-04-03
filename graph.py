@@ -1,3 +1,6 @@
+import random
+
+
 class Graph:
     """
     Graph data structure G = (V, E). Vertices contain the information about the edges.
@@ -29,20 +32,43 @@ class Graph:
                     edges.append({vertex, neighbour})
         return edges
 
-    def add_vertex(self, vertex):
+    def add_vertex(self, u):
         """
         Add a vertex to the graph.
         """
-        if vertex not in self.graph:
-            self.graph[vertex] = []
+        if u not in self.graph:
+            self.graph[u] = []
 
-    def add_edge(self, edge):
+    def add_edge(self, u, v):
         """
         Add an edge to the graph.
         """
-        edge = set(edge)
-        (u, v) = tuple(edge)
         if u in self.graph:
             self.graph[u].append(v)
         else:
             self.graph[u] = [v]
+
+    def is_connected(self, u, v):
+        """
+        Check if two vertices are connected.
+        """
+        if u not in self.graph or v not in self.graph:
+            return False
+
+        if v not in self.graph[u]:
+            return False
+
+        return True
+
+    def connect_two_random_vertices(self):
+        """
+        Randomly connect two vertices.
+        """
+        v, e = random.choice(list(self.graph.items()))
+
+        for vertex in self.graph:
+            if vertex is not v:
+                if not self.is_connected(vertex, v):
+                    print("added", vertex, v)
+                    self.add_edge(vertex, v)
+                    break
