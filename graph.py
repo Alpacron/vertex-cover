@@ -67,10 +67,14 @@ class Graph:
         """
         Add an edge to the graph.
         """
-        if u in self.graph:
-            self.graph[u].append(v)
-        else:
-            self.graph[u] = [v]
+        if u not in self.graph:
+            self.add_vertex(u)
+
+        if v not in self.graph:
+            self.add_vertex(v)
+
+        self.graph[u].append(v)
+        self.graph[v].append(u)
 
     def is_connected(self, u, v):
         """
