@@ -26,5 +26,5 @@ class UpdateItem(BaseModel):
 @app.put("/connect")
 def connect(g: UpdateItem):
     graph = Graph(g.graph)
-    graph.connect_two_random_vertices()
+    graph.connect_two_sub_graphs()
     return graph
