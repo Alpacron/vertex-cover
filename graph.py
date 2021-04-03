@@ -6,8 +6,32 @@ class Graph:
     Graph data structure G = (V, E). Vertices contain the information about the edges.
     """
 
-    def __init__(self, graph={}):
+    def __init__(self, graph=None):
+        if graph is None:
+            graph = {}
         self.graph = graph
+
+    def generate_graph(self, n: int, p: float):
+        """
+        Initialize from n vertices.
+        """
+
+        for i in range(n):
+            self.add_vertex(i)
+
+        e = [False, True]
+        probability = [1 - p, p]
+
+        visited = []
+
+        for v in self.graph:
+            for u in self.graph:
+                if v is not u and not self.is_connected(u, v):
+                    if (v, u) not in visited and (u, v) not in visited:
+                        visited.append((v, u))
+
+                        if random.choices(e, probability)[0]:
+                            self.add_edge(u, v)
 
     def vertices(self):
         """

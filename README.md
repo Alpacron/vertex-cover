@@ -7,6 +7,10 @@
 
 An implementation of vertex cover visualization with kernelization, pruning, search tree optimization and brute force.
 
+## Implementation
+
+We decided to create an interactive web application where we display the vertex cover functionality
+
 ## Getting started
 
 ### Prerequisites
