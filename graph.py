@@ -115,6 +115,7 @@ class Graph:
         Find two disconnected vertices, select an arbitrary vertex in each of them and add an edge between those two vertices.
         """
         items = [int(i[0]) for i in list(self.graph.items())]
+        random.shuffle(items)
         sub = self.find_sub_graph(items[0], [items[0]])
         for i in items:
             if i not in sub:
