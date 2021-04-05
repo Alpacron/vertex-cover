@@ -17,7 +17,20 @@ export default function App() {
     })
 
     const connectGraph = () => {
-        fetch(port + '/connect', {
+        fetch(port + '/connect-sub', {
+            method: "PUT",
+            body: JSON.stringify(response)
+        }).then(res => res.json())
+            .then(response => {
+                if (response.graph !== undefined) {
+                    setResponse(response);
+                    setData(graphToD3Graph(response.graph));
+                }
+            });
+    }
+
+    const connectRandomGraph = () => {
+        fetch(port + '/connect-random', {
             method: "PUT",
             body: JSON.stringify(response)
         }).then(res => res.json())
@@ -50,7 +63,7 @@ export default function App() {
             nodes.push({id: +v});
 
             graph[v].forEach((l: number) => {
-                if (!(links.includes({source: +v, target: l}) || links.includes({source: l, target: +v})))
+                if (links.filter(link => (link.source === +v && link.target === l) || (link.source === l && link.target === +v)).length === 0)
                     links.push({source: +v, target: l});
             });
         });
@@ -100,13 +113,18 @@ export default function App() {
                         onValueChange={valueAsNumber => setVertexCover(valueAsNumber)}
                     />
                 </FormGroup>
-                <FormGroup
-                    label="Connect two random disconnected sub graphs"
-                >
+                <FormGroup>
                     <Button
+                        style={{marginRight: '15px'}}
+                        title="Connect two random disconnected sub graphs"
                         rightIcon="arrow-right"
                         onClick={connectGraph}
-                    >Connect</Button>
+                    >Connect sub graphs</Button>
+                    <Button
+                        title="Connect two valid random vertices"
+                        rightIcon="arrow-right"
+                        onClick={connectRandomGraph}
+                    >Connect random</Button>
                 </FormGroup>
                 <FormGroup>
                     <Button

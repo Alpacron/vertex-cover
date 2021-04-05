@@ -23,8 +23,14 @@ def generate(item: GenerateItem):
 class UpdateItem(BaseModel):
     graph: Any
 
-@app.put("/connect")
+@app.put("/connect-sub")
 def connect(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_sub_graphs()
+    return graph
+
+@app.put("/connect-random")
+def connect(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.connect_two_random_vertices()
     return graph
