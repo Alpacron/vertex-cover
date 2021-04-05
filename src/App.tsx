@@ -1,59 +1,63 @@
 import React, {useState, useEffect} from 'react';
 import {Button, Card, Elevation, FormGroup, NumericInput} from "@blueprintjs/core";
 import {Graph, GraphData} from "react-d3-graph";
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 export default function App() {
     const port = 'http://localhost:8000';
     const [vertices, setVertices] = useState(2);
-    const [probability, setProbability] = useState(0.5);
-    const [response, setResponse] = useState(null);
+    const [probability, setProbability] = useState(1);
+    const [response, setResponse] = useState({graph: {}});
     const [data, setData] = useState<GraphData<any, any>>({nodes: [], links: []});
     const [vertexCover, setVertexCover] = useState(0);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         let graph = document.getElementById("graph-id-graph-wrapper");
         if (graph != null)
-            graph.children[0].setAttribute('style', "")
-    })
+            graph.children[0].setAttribute('style', "");
+        generateGraph();
+        setProbability(0.5);
+    }, [])
+
+    useEffect(() => {
+        setLoading(false);
+        if (response.graph !== undefined)
+            setData(graphToD3Graph(response.graph));
+    }, [response])
 
     const connectGraph = () => {
-        fetch(port + '/connect-sub', {
-            method: "PUT",
-            body: JSON.stringify(response)
-        }).then(res => res.json())
-            .then(response => {
-                if (response.graph !== undefined) {
-                    setResponse(response);
-                    setData(graphToD3Graph(response.graph));
-                }
-            });
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/connect-sub', {
+                method: "PUT",
+                body: JSON.stringify(response)
+            }).then(res => res.json())
+                .then(setResponse);
+        }
     }
 
     const connectRandomGraph = () => {
-        fetch(port + '/connect-random', {
-            method: "PUT",
-            body: JSON.stringify(response)
-        }).then(res => res.json())
-            .then(response => {
-                if (response.graph !== undefined) {
-                    setResponse(response);
-                    setData(graphToD3Graph(response.graph));
-                }
-            });
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/connect-random', {
+                method: "PUT",
+                body: JSON.stringify(response)
+            }).then(res => res.json())
+                .then(setResponse);
+        }
     }
 
     const generateGraph = () => {
-        fetch(port + '/generate', {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({"vertices": vertices, "probability": probability})
-        }).then(res => res.json())
-            .then(response => {
-                if (response.graph !== undefined) {
-                    setResponse(response);
-                    setData(graphToD3Graph(response.graph));
-                }
-            });
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/generate', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({"vertices": vertices, "probability": probability})
+            }).then(res => res.json())
+                .then(setResponse);
+        }
     }
 
     function graphToD3Graph(graph: any): { nodes: { id: number }[], links: { source: number, target: number }[] } {
@@ -102,10 +106,16 @@ export default function App() {
                     />
                 </FormGroup>
                 <FormGroup
+                    style={{display: "flex", flexDirection: "column"}}
                     label="Brute force search"
                     labelFor="brute"
                     labelInfo="(vertex cover k)"
                 >
+                    <Button
+                        style={{marginRight: '15px'}}
+                        rightIcon="arrow-right"
+                        onClick={connectGraph}
+                    >Search</Button>
                     <NumericInput
                         min={0}
                         id="brute"
@@ -139,6 +149,9 @@ export default function App() {
                     data={data}
                     config={{staticGraph: false}}
                 />
+                <div style={{position: "absolute", pointerEvents: "none"}} className={loading? '' : 'fadeout'}>
+                    <CircularProgress/>
+                </div>
             </div>
         </div>
     );
