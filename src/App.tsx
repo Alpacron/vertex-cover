@@ -7,9 +7,10 @@ export default function App() {
     const port = 'http://localhost:8000';
     const [vertices, setVertices] = useState(2);
     const [probability, setProbability] = useState(1);
-    const [response, setResponse] = useState({graph: {}});
+    const [responseGraph, setResponseGraph] = useState({graph: {}});
+    const [responseVertices, setResponseVertices] = useState({vertices: []});
     const [data, setData] = useState<GraphData<any, any>>({nodes: [], links: []});
-    const [vertexCover, setVertexCover] = useState(0);
+    const [vertexCover, setVertexCover] = useState(1);
     const [loading, setLoading] = useState(false);
 
     /**
@@ -27,16 +28,27 @@ export default function App() {
     }, [])
 
     /**
-     * Do when response is loaded
+     * Do when graph response is loaded
      */
     useEffect(() => {
         // Set loading to false.
         setLoading(false);
 
         // Drawing graph.
-        if (response.graph !== undefined)
-            setData(graphToD3Graph(response.graph));
-    }, [response])
+        if (responseGraph.graph !== undefined)
+            setData(graphToD3Graph(responseGraph.graph));
+    }, [responseGraph])
+
+    /**
+     * Do when vertex cover response is loaded
+     */
+    useEffect(() => {
+        // Set loading to false.
+        setLoading(false);
+
+        if (responseVertices.vertices !== undefined)
+            console.log(responseVertices.vertices);
+    }, [responseVertices])
 
     /**
      * Connecting two sub graphs
@@ -46,9 +58,9 @@ export default function App() {
             setLoading(true);
             fetch(port + '/connect-sub', {
                 method: "PUT",
-                body: JSON.stringify(response)
+                body: JSON.stringify(responseGraph)
             }).then(res => res.json())
-                .then(setResponse);
+                .then(setResponseGraph);
         }
     }
 
@@ -60,12 +72,26 @@ export default function App() {
             setLoading(true);
             fetch(port + '/connect-random', {
                 method: "PUT",
-                body: JSON.stringify(response)
+                body: JSON.stringify(responseGraph)
             }).then(res => res.json())
-                .then(setResponse);
+                .then(setResponseGraph);
         }
     }
 
+    /**
+     * Generating graph
+     */
+    const getVertexCover = () => {
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/vertex-cover', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({graph: responseGraph.graph, k: vertexCover})
+            }).then(res => res.json())
+                .then(setResponseVertices);
+        }
+    }
 
     /**
      * Generating graph
@@ -78,7 +104,7 @@ export default function App() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({"vertices": vertices, "probability": probability})
             }).then(res => res.json())
-                .then(setResponse);
+                .then(setResponseGraph);
         }
     }
 
@@ -139,9 +165,10 @@ export default function App() {
                     <Button
                         style={{marginRight: '15px'}}
                         rightIcon="arrow-right"
+                        onClick={getVertexCover}
                     >Search</Button>
                     <NumericInput
-                        min={0}
+                        min={1}
                         id="brute"
                         value={vertexCover}
                         onValueChange={valueAsNumber => setVertexCover(valueAsNumber)}
