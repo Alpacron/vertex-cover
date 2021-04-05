@@ -93,9 +93,9 @@ class Graph:
         """
         Randomly connect two vertices.
         """
-        items = [i[0] for i in list(self.graph.items())]
+        items = [i[0] for i in list(self.graph.items()) if len(self.graph[str(i[0])]) < len(self.vertices()) - 1]
         v1 = random.choice(items)
-        items.remove(v1)
+        items = [i for i in items if int(i) not in [int(v1)] + self.graph[str(v1)]]
         v2 = random.choice(items)
 
         if not self.is_connected(v1, v2):
