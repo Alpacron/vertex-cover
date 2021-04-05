@@ -94,12 +94,14 @@ class Graph:
         Randomly connect two vertices.
         """
         items = [i[0] for i in list(self.graph.items()) if len(self.graph[str(i[0])]) < len(self.vertices()) - 1]
-        v1 = random.choice(items)
-        items = [i for i in items if int(i) not in [int(v1)] + self.graph[str(v1)]]
-        v2 = random.choice(items)
+        if len(items) > 0:
+            v1 = random.choice(items)
+            items = [i for i in items if int(i) not in [int(v1)] + self.graph[str(v1)]]
+            if len(items) > 0:
+                v2 = random.choice(items)
 
-        if not self.is_connected(v1, v2):
-            self.add_edge(v1, v2)
+                if not self.is_connected(v1, v2):
+                    self.add_edge(v1, v2)
 
     def find_sub_graph(self, v, sub):
         """
