@@ -2,8 +2,6 @@ import React, {useState, useEffect} from 'react';
 import {Button, Card, Elevation, FormGroup, NumericInput} from "@blueprintjs/core";
 import {Graph, GraphData} from "react-d3-graph";
 
-
-
 export default function App() {
     const port = 'http://localhost:8000';
     const [vertices, setVertices] = useState(2);
@@ -14,7 +12,7 @@ export default function App() {
 
     useEffect(() => {
         let graph = document.getElementById("graph-id-graph-wrapper");
-        if(graph != null)
+        if (graph != null)
             graph.children[0].setAttribute('style', "")
     })
 
@@ -24,7 +22,7 @@ export default function App() {
             body: JSON.stringify(response)
         }).then(res => res.json())
             .then(response => {
-                if(response.graph !== undefined) {
+                if (response.graph !== undefined) {
                     setResponse(response);
                     setData(graphToD3Graph(response.graph));
                 }
@@ -34,25 +32,25 @@ export default function App() {
     const generateGraph = () => {
         fetch(port + '/generate', {
             method: "POST",
-            headers: {'Content-Type':'application/json'},
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({"vertices": vertices, "probability": probability})
         }).then(res => res.json())
             .then(response => {
-                if(response.graph !== undefined) {
+                if (response.graph !== undefined) {
                     setResponse(response);
                     setData(graphToD3Graph(response.graph));
                 }
             });
     }
 
-    function graphToD3Graph(graph: any) : {nodes: { id: number }[], links: { source: number, target: number }[]} {
+    function graphToD3Graph(graph: any): { nodes: { id: number }[], links: { source: number, target: number }[] } {
         let nodes: { id: number }[] = []
         let links: { source: number, target: number }[] = []
         Object.keys(graph).forEach(v => {
             nodes.push({id: +v});
 
             graph[v].forEach((l: number) => {
-                if(!(links.includes({source: +v, target: l}) || links.includes({source: l, target: +v})))
+                if (!(links.includes({source: +v, target: l}) || links.includes({source: l, target: +v})))
                     links.push({source: +v, target: l});
             });
         });
