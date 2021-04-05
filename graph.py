@@ -126,7 +126,7 @@ class Graph:
 
     def vertex_cover_brute(self, k, fewest=None, current=None, covered=None):
         """
-        Find vertices that cover all edges with minimum required vertices.
+        Find minimum required vertices that cover all edges.
         """
         if fewest is None:
             fewest = []
