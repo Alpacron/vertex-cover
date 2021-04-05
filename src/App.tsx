@@ -12,21 +12,36 @@ export default function App() {
     const [vertexCover, setVertexCover] = useState(0);
     const [loading, setLoading] = useState(false);
 
+    /**
+     * Do on document load
+     */
     useEffect(() => {
+        // Setting graph height and width to 0, so flex is set properly.
         let graph = document.getElementById("graph-id-graph-wrapper");
         if (graph != null)
             graph.children[0].setAttribute('style', "");
+
+        // Generating graph.
         generateGraph();
         setProbability(0.5);
     }, [])
 
+    /**
+     * Do when response is loaded
+     */
     useEffect(() => {
+        // Set loading to false.
         setLoading(false);
+
+        // Drawing graph.
         if (response.graph !== undefined)
             setData(graphToD3Graph(response.graph));
     }, [response])
 
-    const connectGraph = () => {
+    /**
+     * Connecting two sub graphs
+     */
+    const connectSubGraphs = () => {
         if (!loading) {
             setLoading(true);
             fetch(port + '/connect-sub', {
@@ -37,7 +52,10 @@ export default function App() {
         }
     }
 
-    const connectRandomGraph = () => {
+    /**
+     * Connecting two vertices
+     */
+    const connectVertices = () => {
         if (!loading) {
             setLoading(true);
             fetch(port + '/connect-random', {
@@ -48,6 +66,10 @@ export default function App() {
         }
     }
 
+
+    /**
+     * Generating graph
+     */
     const generateGraph = () => {
         if (!loading) {
             setLoading(true);
@@ -60,6 +82,9 @@ export default function App() {
         }
     }
 
+    /**
+     * Converting our python graph to react-d3-graph
+     */
     function graphToD3Graph(graph: any): { nodes: { id: number }[], links: { source: number, target: number }[] } {
         let nodes: { id: number }[] = []
         let links: { source: number, target: number }[] = []
@@ -114,7 +139,6 @@ export default function App() {
                     <Button
                         style={{marginRight: '15px'}}
                         rightIcon="arrow-right"
-                        onClick={connectGraph}
                     >Search</Button>
                     <NumericInput
                         min={0}
@@ -128,13 +152,13 @@ export default function App() {
                         style={{marginRight: '15px'}}
                         title="Connect two random disconnected sub graphs"
                         rightIcon="arrow-right"
-                        onClick={connectGraph}
+                        onClick={connectSubGraphs}
                     >Connect sub graphs</Button>
                     <Button
-                        title="Connect two valid random vertices"
+                        title="Connect two random disconnected vertices"
                         rightIcon="arrow-right"
-                        onClick={connectRandomGraph}
-                    >Connect random</Button>
+                        onClick={connectVertices}
+                    >Connect vertices</Button>
                 </FormGroup>
                 <FormGroup>
                     <Button
@@ -149,7 +173,11 @@ export default function App() {
                     data={data}
                     config={{staticGraph: false}}
                 />
-                <div style={{position: "absolute", pointerEvents: "none"}} className={loading? '' : 'fadeout'}>
+                <div style={{
+                    position: "absolute",
+                    pointerEvents: "none",
+                    animation: loading ? '' : 'fadeOut 0.5s forwards'
+                }}>
                     <CircularProgress/>
                 </div>
             </div>

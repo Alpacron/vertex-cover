@@ -14,7 +14,6 @@ class Graph:
         """
         Initialize from n vertices.
         """
-
         for i in range(n):
             self.add_vertex(i)
 
