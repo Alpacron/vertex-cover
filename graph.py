@@ -146,7 +146,17 @@ class Graph:
             vertices = [e for e in self.vertices() if e not in current]
             random.shuffle(vertices)
             for v in vertices:
-                c = covered + [(v, i) for i in self.graph[str(v)] if not ((v, i) in covered or (i, v) in covered)]
+                c = covered + [e for e in self.vertex_edges(v, k) if not (e in covered or (e[1], e[0]) in covered)]
                 fewest = self.vertex_cover_brute(k, fewest, current + [v], c)
 
         return fewest
+
+    def vertex_edges(self, vertex, k=1, depth=0, covered=None):
+        if covered is None:
+            covered = []
+
+        if depth < k:
+            for v in [e for e in self.graph[str(vertex)] if not ((vertex, e) in covered or (e, vertex) in covered)]:
+                covered = self.vertex_edges(v, k, depth + 1, covered + [(vertex, v)])
+
+        return covered
