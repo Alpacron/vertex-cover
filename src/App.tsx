@@ -46,7 +46,7 @@ export default function App() {
                     setLoading(false);
                     setCoverVertices([]);
                     setData(res)
-                });
+                }).catch(() => setLoading(false));
         }
     }
 
@@ -61,7 +61,7 @@ export default function App() {
                     setLoading(false);
                     setCoverVertices([]);
                     setData(res)
-                });
+                }).catch(() => setLoading(false));
         }
     }
 
@@ -77,7 +77,7 @@ export default function App() {
                     setLoading(false);
                     setCoverVertices([]);
                     setData(res)
-                });
+                }).catch(() => setLoading(false));
         }
     }
 
@@ -92,7 +92,7 @@ export default function App() {
                 .then(res => {
                     setLoading(false);
                     setCoverVertices(res.vertices)
-                });
+                }).catch(() => setLoading(false));
         }
     }
 

@@ -132,7 +132,7 @@ class Graph:
         if edges is None:
             edges = self.edges()
         if vertices is None:
-            edges = self.vertices()
+            vertices = self.vertices()
         if result is None:
             result = []
         if covered is None:
@@ -157,12 +157,13 @@ class Graph:
             result = current
 
         # Recursively do this for all vertices (randomly), until a solution is found.
-        if (k == -1 and (len(current) < len(result) or result == []) and not contains_all_edges) or (len(current) < k):
-            vertices = [e for e in vertices if e not in current]
-            random.shuffle(vertices)
-            for v in vertices:
+        if (k == -1 and (len(current) < len(result) or result == []) and not contains_all_edges) or len(current) < k:
+            ver = [e for e in vertices if e not in current]
+            random.shuffle(ver)
+            for v in ver:
                 c = covered + [e for e in self.vertex_edges(v, depth) if not (e in covered or (e[1], e[0]) in covered)]
-                result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered)
+                result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered,
+                                                                  edges, vertices)
 
         return result, highest_covered
 
