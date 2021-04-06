@@ -1,7 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, Card, Elevation, FormGroup, NumericInput} from "@blueprintjs/core";
+import {Button, Card, Elevation, FormGroup, NumericInput, Spinner} from "@blueprintjs/core";
 import {Graph} from "react-d3-graph";
-import CircularProgress from '@material-ui/core/CircularProgress';
 import useWindowDimensions from "./Util/useWindowDimensions";
 import convertToD3Graph from "./Util/convertToD3Graph";
 import './App.css';
@@ -204,7 +203,7 @@ export default function App() {
                     pointerEvents: "none",
                     animation: loading ? '' : 'fadeOut 0.5s forwards'
                 }}>
-                    <CircularProgress/>
+                    <Spinner/>
                 </div>
             </div>
         </div>

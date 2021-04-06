@@ -6,7 +6,8 @@ export default function NavBar() {
         <Navbar>
             <Navbar.Group align={Alignment.LEFT}>
                 <Navbar.Heading>Vertex Cover</Navbar.Heading>
-                <p style={{margin: 0}}>- Jelle Huibregtse & Aron Hemmes</p>
+                <Navbar.Divider/>
+                <Navbar.Heading style={{marginLeft: "1em"}}>by Jelle Huibregtse & Aron Hemmes</Navbar.Heading>
             </Navbar.Group>
             <Navbar.Group align={Alignment.RIGHT}>
                 <Button className="bp3-minimal" icon="home" text="Home"/>

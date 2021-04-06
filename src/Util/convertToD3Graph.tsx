@@ -29,7 +29,7 @@ export default function convertToD3Graph(graph: any, k: number, cover: number[])
             // if link hasn't been added yet
             if (links.filter(link => (link.source === +v && link.target === l) || (link.source === l && link.target === +v)).length === 0) {
                 // check if it is covered
-                let isCovered = covered.filter(c => (c.source == +v && c.target == l) || (c.source == l && c.target == +v)).length > 0;
+                let isCovered = covered.filter(c => (c.source === +v && c.target === l) || (c.source === l && c.target === +v)).length > 0;
                 // add link to links
                 links.push({source: +v, target: l, color: isCovered ? "goldenrod" : "#d3d3d3"});
             }
