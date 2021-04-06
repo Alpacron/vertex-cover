@@ -161,6 +161,8 @@ class Graph:
             for v in vertices:
                 c = covered + [e for e in self.vertex_edges(v, depth) if not (e in covered or (e[1], e[0]) in covered)]
                 result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered)
+                if -1 < k == len(result) and highest_covered >= len(edges):
+                    break
 
         return result, highest_covered
 
