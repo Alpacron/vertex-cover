@@ -1,118 +1,226 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, Card, Elevation, FormGroup, NumericInput} from "@blueprintjs/core";
-import {Graph, GraphData} from "react-d3-graph";
-import './App.css';
+import {Button, ButtonGroup, Card, FormGroup, H6, NumericInput, Spinner} from "@blueprintjs/core";
+import {Graph} from "react-d3-graph";
 import useWindowDimensions from "./Util/useWindowDimensions";
-
+import convertToD3Graph from "./Util/convertToD3Graph";
+import './App.css';
 
 export default function App() {
     const port = 'http://localhost:8000';
-    const [vertices, setVertices] = useState(1);
-    const [probability, setProbability] = useState(0);
-    const [response, setResponse] = useState(null);
-    const [data, setData] = useState<GraphData<any, any>>({nodes: [{id: 0}, {id: 1}], links: [{source: 0, target: 1}]});
-    const graphRef = useRef<Graph<any, any>>(null)
+    const [vertices, setVertices] = useState(2);
+    const [probability, setProbability] = useState(1);
+    const [data, setData] = useState<{ graph: {} }>({graph: {}});
+    const [coverVertices, setCoverVertices] = useState<number[]>([]);
+    const [coverK, setCoverK] = useState<number>(-1);
+    const [coverDepth, setCoverDepth] = useState<number>(1);
+    const [loading, setLoading] = useState(false);
     const {width, height} = useWindowDimensions();
+    const graphRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         // TODO: Restart simulation (or center graph) upon resizing.
     }, [width, height])
 
-    const connectGraph = () => {
-        fetch(port + '/connect', {
-            method: "PUT",
-            body: JSON.stringify(response)
-        }).then(res => res.json())
-            .then(response => {
-                if (response.graph !== undefined) {
-                    setResponse(response);
-                    setData(graphToD3Graph(response.graph));
-                }
-            });
+    useEffect(() => {
+        generateGraph();
+        setProbability(0.5);
+    }, [])
+
+    useEffect(() => {
+        if (coverVertices.length > 0) {
+            setCoverVertices([]);
+        }
+    }, [coverDepth])
+
+    const connectSubGraphs = () => {
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/connect-sub', {
+                method: "PUT",
+                body: JSON.stringify(data)
+            }).then(res => res.json())
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices([]);
+                    setData(res)
+                }).catch(() => setLoading(false));
+        }
+    }
+
+    const connectVertices = () => {
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/connect-random', {
+                method: "PUT",
+                body: JSON.stringify(data)
+            }).then(res => res.json())
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices([]);
+                    setData(res)
+                }).catch(() => setLoading(false));
+        }
     }
 
     const generateGraph = () => {
-        fetch(port + '/generate', {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({"vertices": vertices, "probability": probability})
-        }).then(res => res.json())
-            .then(response => {
-                if (response.graph !== undefined) {
-                    setResponse(response);
-                    setData(graphToD3Graph(response.graph));
-                }
-            });
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/generate', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({"vertices": vertices, "probability": probability})
+            }).then(res => res.json())
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices([]);
+                    setData(res)
+                }).catch(() => setLoading(false));
+        }
     }
 
-    function graphToD3Graph(graph: any): { nodes: { id: number }[], links: { source: number, target: number }[] } {
-        let nodes: { id: number }[] = []
-        let links: { source: number, target: number }[] = []
-        Object.keys(graph).forEach(v => {
-            nodes.push({id: +v});
-
-            graph[v].forEach((l: number) => {
-                if (!(links.includes({source: +v, target: l}) || links.includes({source: l, target: +v})))
-                    links.push({source: +v, target: l});
-            });
-        });
-
-        return {nodes: nodes, links: links};
+    const getVertexCover = () => {
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/vertex-cover', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({graph: data.graph, depth: coverDepth, k: coverK})
+            }).then(res => res.json())
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices(res.vertices)
+                }).catch(() => setLoading(false));
+        }
     }
+
+    const onClickNode = function (nodeId: string) {
+        let c = Object.assign([], coverVertices);
+        if (c.indexOf(+nodeId, 0) > -1)
+            c.splice(coverVertices.indexOf(+nodeId, 0), 1);
+        else
+            c.push(+nodeId);
+        setCoverVertices(c);
+    };
 
     return (
-        <div>
-            <Card elevation={Elevation.TWO}>
-                <FormGroup
-                    label="Number of vertices"
-                    labelFor="vertices"
-                    labelInfo="(required)"
-                >
-                    <NumericInput
-                        min={1}
-                        id="vertices"
-                        value={vertices}
-                        onValueChange={valueAsNumber => setVertices(valueAsNumber)}
-                    />
-                </FormGroup>
-                <FormGroup
-                    label="Density of edges (Probability p)"
-                    labelFor="probability"
-                    labelInfo="(required)"
-                >
-                    <NumericInput
-                        min={0}
-                        max={1}
-                        stepSize={0.1}
-                        id="probability"
-                        value={probability}
-                        onValueChange={valueAsNumber => setProbability(valueAsNumber)}
-                    />
-                </FormGroup>
-                <FormGroup>
-                    <Button
-                        rightIcon="arrow-right"
-                        onClick={connectGraph}
-                    >Connect</Button>
-                </FormGroup>
-                <FormGroup>
-                    <Button
-                        rightIcon="arrow-right"
-                        onClick={generateGraph}
-                    >Generate graph</Button>
-                </FormGroup>
+        <div style={{display: "flex", flexDirection: "column", flex: "auto", overflow: "hidden"}}>
+            <Card style={{display: "flex", flexDirection: "row", overflowY: "scroll"}}>
+                <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
+                    <H6>Directed Graph</H6>
+                    <FormGroup
+                        label="Number of vertices"
+                        labelFor="vertices"
+                    >
+                        <NumericInput
+                            min={1}
+                            id="vertices"
+                            value={vertices}
+                            onValueChange={valueAsNumber => setVertices(valueAsNumber)}
+                        />
+                    </FormGroup>
+                    <FormGroup
+                        label="Density of edges"
+                        labelFor="probability"
+                        labelInfo="(probability p)"
+                    >
+                        <NumericInput
+                            min={0}
+                            max={1}
+                            stepSize={0.1}
+                            id="probability"
+                            value={probability}
+                            onValueChange={setProbability}
+                        />
+                    </FormGroup>
+                    <ButtonGroup style={{marginRight: "1em"}}>
+                        <Button
+                            onClick={generateGraph}
+                        >Generate graph</Button>
+                    </ButtonGroup>
+                </div>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: "2em"
+                }}>
+                    <H6>Connected</H6>
+                    <FormGroup>
+                        <Button
+                            title="Connect two random disconnected sub graphs"
+                            onClick={connectSubGraphs}
+                        >Connect sub graphs</Button>
+                    </FormGroup>
+                    <FormGroup>
+                        <Button
+                            title="Connect two random disconnected vertices"
+                            onClick={connectVertices}
+                        >Connect vertices</Button>
+                    </FormGroup>
+                </div>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: "2em"
+                }}>
+                    <H6>Vertex Cover</H6>
+                    <FormGroup
+                        style={{display: "flex", flexDirection: "column"}}
+                        label="Size k vertex cover"
+                        labelFor="coverK"
+                    >
+                        <NumericInput
+                            min={-1}
+                            id="coverK"
+                            title="-1 = minimum k required"
+                            value={coverK}
+                            onValueChange={setCoverK}
+                        />
+                    </FormGroup>
+                    <FormGroup
+                        style={{display: "flex", flexDirection: "column"}}
+                        label="Vertex cover depth"
+                        labelFor="depth"
+                    >
+                        <NumericInput
+                            min={1}
+                            id="depth"
+                            title="Amount of edges a single vortex can reach"
+                            value={coverDepth}
+                            onValueChange={setCoverDepth}
+                        />
+                    </FormGroup>
+                    <ButtonGroup>
+                        <Button
+                            onClick={getVertexCover}
+                        >Brute force search</Button>
+                    </ButtonGroup>
+                </div>
             </Card>
-            <div className="container__graph-area" style={{margin: "1em"}}>
+
+            <div className="container__graph-area" ref={graphRef}>
                 <Graph
-                    ref={graphRef}
                     id="graph-id"
-                    data={data}
+                    data={convertToD3Graph(data.graph, coverDepth != undefined ? coverDepth : 1, coverVertices)}
+                    onClickNode={onClickNode}
                     config={{
                         staticGraph: false,
-                        height: height * 0.70,
-                        width: width * 0.95
+                        height: graphRef.current != null ? graphRef.current.offsetHeight : 0,
+                        width: graphRef.current != null ? graphRef.current.offsetWidth : 0,
+                        minZoom: 1,
+                        maxZoom: 8
                     }}
                 />
+                <div style={{
+                    position: "absolute",
+                    pointerEvents: "none",
+                    animation: loading ? '' : 'fadeOut 0.5s forwards'
+                }}>
+                    <Spinner/>
+                </div>
             </div>
         </div>
     );

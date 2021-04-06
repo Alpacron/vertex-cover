@@ -9,9 +9,11 @@ from typing import Any
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['POST', 'PUT'], allow_headers=["*"])
 
+
 class GenerateItem(BaseModel):
     vertices: int
     probability: float
+
 
 @app.post("/generate")
 def generate(item: GenerateItem):
@@ -23,8 +25,29 @@ def generate(item: GenerateItem):
 class UpdateItem(BaseModel):
     graph: Any
 
-@app.put("/connect")
+
+@app.put("/connect-sub")
 def connect(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_sub_graphs()
     return graph
+
+
+@app.put("/connect-random")
+def connect(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.connect_two_random_vertices()
+    return graph
+
+
+class CoverItem(BaseModel):
+    graph: Any
+    depth: int
+    k: int
+
+
+@app.post("/vertex-cover")
+def connect(c: CoverItem):
+    graph = Graph(c.graph)
+    print(c.k)
+    return {"vertices": graph.vertex_cover_brute(c.k, c.depth)[0]}

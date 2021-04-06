@@ -1,23 +1,28 @@
 import random
 
+
 class Graph:
     """
     Graph data structure G = (V, E). Vertices contain the information about the edges.
     """
 
-    def __init__(self, graph=None):
-        if graph is None:
-            graph = {}
-        self.graph = graph
+    def __init__(self, g=None):
+        if g is None:
+            g = {}
+        g2 = {}
+        for vertex in g.keys():
+            g2.update({str(vertex): [int(e) for e in g[vertex]]})
+        self.graph = g2
 
     def generate_graph(self, n: int, p: float):
         """
         Initialize from n vertices.
         """
-
+        # Add vertices
         for i in range(n):
             self.add_vertex(i)
 
+        # Add edges according to probability
         e = [False, True]
         probability = [1 - p, p]
 
@@ -36,23 +41,17 @@ class Graph:
         """
         Returns a list of all vertices in the graph.
         """
-        return list(self.graph.keys())
+        return [int(i) for i in list(self.graph.keys())]
 
     def edges(self):
         """
         Returns a list of all edges in the graph.
         """
-        return self.generate_edges()
-
-    def generate_edges(self):
-        """
-        For each edge generate its edges and add that to a list.
-        """
         edges = []
         for vertex in self.graph:
             for neighbour in self.graph[vertex]:
-                if (neighbour, vertex) not in edges:
-                    edges.append({vertex, neighbour})
+                if not ((int(neighbour), int(vertex)) in edges or (int(vertex), int(neighbour)) in edges):
+                    edges += [(int(vertex), int(neighbour))]
         return edges
 
     def add_vertex(self, u):
@@ -93,13 +92,15 @@ class Graph:
         """
         Randomly connect two vertices.
         """
-        items = [i[0] for i in list(self.graph.items())]
-        v1 = random.choice(items)
-        items.remove(v1)
-        v2 = random.choice(items)
+        items = [i[0] for i in list(self.graph.items()) if len(self.graph[str(i[0])]) < len(self.vertices()) - 1]
+        if len(items) > 0:
+            v1 = random.choice(items)
+            items = [i for i in items if int(i) not in [int(v1)] + self.graph[str(v1)]]
+            if len(items) > 0:
+                v2 = random.choice(items)
 
-        if not self.is_connected(v1, v2):
-            self.add_edge(v1, v2)
+                if not self.is_connected(v1, v2):
+                    self.add_edge(v1, v2)
 
     def find_sub_graph(self, v, sub):
         """
@@ -112,11 +113,66 @@ class Graph:
 
     def connect_two_sub_graphs(self):
         """
-        Find two disconnected vertices, select an arbitrary vertex in each of them and add an edge between those two vertices.
+        Find two disconnected sub graphs, select a random vertex in each of them and add an edge between
+        those two vertices.
         """
         items = [int(i[0]) for i in list(self.graph.items())]
+        random.shuffle(items)
         sub = self.find_sub_graph(items[0], [items[0]])
         for i in items:
             if i not in sub:
                 self.add_edge(random.choice(sub), i)
                 break
+
+    def vertex_cover_brute(self, k, depth=1, result=None, current=None, covered=None, highest_covered=0, edges=None,
+                           vertices=None):
+        """
+        Find minimum required vertices that cover all edges.
+        """
+        if edges is None:
+            edges = self.edges()
+        if vertices is None:
+            vertices = self.vertices()
+        if result is None:
+            result = []
+        if covered is None:
+            covered = []
+        if current is None:
+            current = []
+
+        contains_all_edges = len([e for e in edges if e in covered or (e[1], e[0]) in covered]) == len(edges)
+
+        if k >= len(vertices):
+            return vertices, len(edges)
+
+        # If current covered contains all edges, set fewest to current and backtrack
+        if k == -1 and contains_all_edges:
+            # If current is bigger than fewest, we backtrack.
+            if len(current) < len(result) or result == []:
+                highest_covered = len(edges)
+                result = current
+
+        if k == len(current) and len(covered) > highest_covered:
+            highest_covered = len(covered)
+            result = current
+
+        # Recursively do this for all vertices (randomly), until a solution is found.
+        if (k == -1 and (len(current) < len(result) or result == []) and not contains_all_edges) or len(current) < k:
+            ver = [e for e in vertices if e not in current]
+            random.shuffle(ver)
+            for v in ver:
+                c = covered + [e for e in self.vertex_edges(v, depth) if not (e in covered or (e[1], e[0]) in covered)]
+                result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered,
+                                                                  edges, vertices)
+
+        return result, highest_covered
+
+    def vertex_edges(self, vertex, depth=1, current_depth=0, covered=None):
+        if covered is None:
+            covered = []
+
+        if current_depth < depth:
+            for v in [e for e in self.graph[str(vertex)] if not ((vertex, e) in covered or (e, vertex) in covered)]:
+                covered = self.vertex_edges(v, depth, current_depth + 1, covered + [(vertex, v)])
+
+        return covered
