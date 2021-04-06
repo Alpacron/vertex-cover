@@ -8,7 +8,7 @@ export default function App() {
     const [vertices, setVertices] = useState(2);
     const [probability, setProbability] = useState(1);
     const [responseGraph, setResponseGraph] = useState({graph: {}});
-    const [responseVertices, setResponseVertices] = useState({vertices: []});
+    const [responseVertices, setResponseVertices] = useState<{ vertices: number[] }>({vertices: []});
     const [data, setData] = useState<GraphData<any, any>>({nodes: [], links: []});
     const [vertexCover, setVertexCover] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -20,11 +20,12 @@ export default function App() {
         // Setting graph height and width to 0, so flex is set properly.
         let graph = document.getElementById("graph-id-graph-wrapper");
         if (graph != null)
-            graph.children[0].setAttribute('style', "");
+            graph.children[0].removeAttribute("style");
 
         // Generating graph.
         generateGraph();
         setProbability(0.5);
+
     }, [])
 
     /**
@@ -35,8 +36,10 @@ export default function App() {
         setLoading(false);
 
         // Drawing graph.
-        if (responseGraph.graph !== undefined)
+        if (responseGraph.graph !== undefined) {
+            setResponseVertices({vertices: []})
             setData(graphToD3Graph(responseGraph.graph));
+        }
     }, [responseGraph])
 
     /**
@@ -46,8 +49,38 @@ export default function App() {
         // Set loading to false.
         setLoading(false);
 
-        if (responseVertices.vertices !== undefined)
-            console.log(responseVertices.vertices);
+        if (responseVertices.vertices !== undefined && responseVertices.vertices !== []) {
+            // Setting styling of nodes and lines
+            let e = document.getElementById("graph-id-graph-container-zoomable");
+            if (e != null) {
+                let children = e.children;
+                for (let child = 0; child < children.length; child++) {
+                    // color nodes
+                    if (children[child].classList[0] == "node") {
+                        let c = children[child].firstElementChild;
+                        if (c != null) {
+                            if (responseVertices.vertices.includes(+children[child].id))
+                                c.setAttribute("fill", "#3f51b5");
+                            else
+                                c.setAttribute("fill", "#d3d3d3");
+                        }
+                    }
+                    // color lines
+                    else {
+                        let c = children[child].firstElementChild;
+                        if (c != null) {
+                            let style = c.getAttribute("style");
+                            if (style != null)
+                                c.setAttribute("style", style.replace("stroke: rgb(211, 211, 211); ", ""))
+                            if (responseVertices.vertices.includes(+c.id.split(",")[0]) || responseVertices.vertices.includes(+c.id.split(",")[1]))
+                                c.setAttribute("stroke", "goldenrod");
+                            else
+                                c.setAttribute("stroke", "rgb(211, 211, 211)");
+                        }
+                    }
+                }
+            }
+        }
     }, [responseVertices])
 
     /**
@@ -130,7 +163,7 @@ export default function App() {
         <div
             style={{display: "flex", flexDirection: "column", flex: "auto"}}
         >
-            <Card elevation={Elevation.TWO}>
+            <Card elevation={Elevation.TWO} style={{overflowY: "scroll", flex: '1 0 0'}}>
                 <FormGroup
                     label="Number of vertices"
                     labelFor="vertices"
