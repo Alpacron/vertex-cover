@@ -102,6 +102,15 @@ export default function App() {
         }
     }
 
+    const onClickNode = function(nodeId: string) {
+        let c = Object.assign([], coverVertices.cover);
+        if(c.indexOf(+nodeId, 0) > -1)
+            c.splice(coverVertices.cover.indexOf(+nodeId, 0), 1);
+        else
+            c.push(+nodeId);
+        setCoverVertices({k: coverVertices.k, cover: c});
+    };
+
     return (
         <div
             style={{display: "flex", flexDirection: "column", flex: "auto"}}
@@ -174,6 +183,7 @@ export default function App() {
                 <Graph
                     id="graph-id"
                     data={convertToD3Graph(data.graph, coverVertices)}
+                    onClickNode={onClickNode}
                     config={{
                         staticGraph: false,
                         height: graphRef.current != null ? graphRef.current.offsetHeight : 0,
