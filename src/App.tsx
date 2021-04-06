@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, Card, Elevation, FormGroup, NumericInput, Spinner} from "@blueprintjs/core";
+import {Button, ButtonGroup, Card, Elevation, FormGroup, NumericInput, Spinner} from "@blueprintjs/core";
 import {Graph} from "react-d3-graph";
 import useWindowDimensions from "./Util/useWindowDimensions";
 import convertToD3Graph from "./Util/convertToD3Graph";
@@ -123,7 +123,7 @@ export default function App() {
         <div
             style={{display: "flex", flexDirection: "column", flex: "auto"}}
         >
-            <Card elevation={Elevation.TWO} style={{overflowY: "scroll", flex: '1 0 0'}}>
+            <Card style={{overflowY: "scroll"}}>
                 <FormGroup
                     label="Number of vertices"
                     labelFor="vertices"
@@ -157,7 +157,6 @@ export default function App() {
                 >
                     <Button
                         style={{marginRight: '15px'}}
-                        rightIcon="arrow-right"
                         onClick={getVertexCover}
                     >Search</Button>
                     <NumericInput
@@ -167,25 +166,21 @@ export default function App() {
                         onValueChange={valueAsNumber => setVertexCover(valueAsNumber)}
                     />
                 </FormGroup>
-                <FormGroup>
+                <ButtonGroup style={{marginRight: "1em"}}>
                     <Button
-                        style={{marginRight: '15px'}}
+                        onClick={generateGraph}
+                    >Generate graph</Button>
+                </ButtonGroup>
+                <ButtonGroup>
+                    <Button
                         title="Connect two random disconnected sub graphs"
-                        rightIcon="arrow-right"
                         onClick={connectSubGraphs}
                     >Connect sub graphs</Button>
                     <Button
                         title="Connect two random disconnected vertices"
-                        rightIcon="arrow-right"
                         onClick={connectVertices}
                     >Connect vertices</Button>
-                </FormGroup>
-                <FormGroup>
-                    <Button
-                        rightIcon="arrow-right"
-                        onClick={generateGraph}
-                    >Generate graph</Button>
-                </FormGroup>
+                </ButtonGroup>
             </Card>
             <div className="container__graph-area" ref={graphRef}>
                 <Graph
