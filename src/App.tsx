@@ -25,15 +25,8 @@ export default function App() {
      * Do on document load
      */
     useEffect(() => {
-        // // Setting graph height and width to 0, so flex is set properly.
-        // let graph = document.getElementById("graph-id-graph-wrapper");
-        // if (graph != null)
-        //     graph.children[0].removeAttribute("style");
-
-        // Generating graph.
         generateGraph();
         setProbability(0.5);
-
     }, [])
 
     /**
