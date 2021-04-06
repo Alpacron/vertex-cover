@@ -1,21 +1,21 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, Card, Elevation, FormGroup, NumericInput} from "@blueprintjs/core";
-import {Graph, GraphData} from "react-d3-graph";
+import {Graph} from "react-d3-graph";
 import CircularProgress from '@material-ui/core/CircularProgress';
 import useWindowDimensions from "./Util/useWindowDimensions";
+import convertToD3Graph from "./Util/convertToD3Graph";
 import './App.css';
 
 export default function App() {
     const port = 'http://localhost:8000';
     const [vertices, setVertices] = useState(2);
     const [probability, setProbability] = useState(1);
-    const [responseGraph, setResponseGraph] = useState({graph: {}});
-    const [responseVertices, setResponseVertices] = useState<{ vertices: number[] }>({vertices: []});
-    const [data, setData] = useState<GraphData<any, any>>({nodes: [], links: []});
+    const [data, setData] = useState<{graph: {}}>({graph: {}});
+    const [coverVertices, setCoverVertices] = useState<{k: number, cover: number[]}>({k: 1, cover: []});
     const [vertexCover, setVertexCover] = useState(1);
     const [loading, setLoading] = useState(false);
-    const graphRef = useRef<Graph<any, any>>(null)
     const {width, height} = useWindowDimensions();
+    const graphRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         // TODO: Restart simulation (or center graph) upon resizing.
@@ -25,71 +25,16 @@ export default function App() {
      * Do on document load
      */
     useEffect(() => {
-        // Setting graph height and width to 0, so flex is set properly.
-        let graph = document.getElementById("graph-id-graph-wrapper");
-        if (graph != null)
-            graph.children[0].removeAttribute("style");
+        // // Setting graph height and width to 0, so flex is set properly.
+        // let graph = document.getElementById("graph-id-graph-wrapper");
+        // if (graph != null)
+        //     graph.children[0].removeAttribute("style");
 
         // Generating graph.
         generateGraph();
         setProbability(0.5);
 
     }, [])
-
-    /**
-     * Do when graph response is loaded
-     */
-    useEffect(() => {
-        // Set loading to false.
-        setLoading(false);
-
-        // Drawing graph.
-        if (responseGraph.graph !== undefined) {
-            setResponseVertices({vertices: []})
-            setData(graphToD3Graph(responseGraph.graph));
-        }
-    }, [responseGraph])
-
-    /**
-     * Do when vertex cover response is loaded
-     */
-    useEffect(() => {
-        // Set loading to false.
-        setLoading(false);
-
-        if (responseVertices.vertices !== undefined && responseVertices.vertices !== []) {
-            // Setting styling of nodes and lines
-            let e = document.getElementById("graph-id-graph-container-zoomable");
-            if (e != null) {
-                let children = e.children;
-                for (let child = 0; child < children.length; child++) {
-                    // color nodes
-                    if (children[child].classList[0] == "node") {
-                        let c = children[child].firstElementChild;
-                        if (c != null) {
-                            if (responseVertices.vertices.includes(+children[child].id))
-                                c.setAttribute("fill", "#3f51b5");
-                            else
-                                c.setAttribute("fill", "#d3d3d3");
-                        }
-                    }
-                    // color lines
-                    else {
-                        let c = children[child].firstElementChild;
-                        if (c != null) {
-                            let style = c.getAttribute("style");
-                            if (style != null)
-                                c.setAttribute("style", style.replace("stroke: rgb(211, 211, 211); ", ""))
-                            if (responseVertices.vertices.includes(+c.id.split(",")[0]) || responseVertices.vertices.includes(+c.id.split(",")[1]))
-                                c.setAttribute("stroke", "goldenrod");
-                            else
-                                c.setAttribute("stroke", "rgb(211, 211, 211)");
-                        }
-                    }
-                }
-            }
-        }
-    }, [responseVertices])
 
     /**
      * Connecting two sub graphs
@@ -99,9 +44,9 @@ export default function App() {
             setLoading(true);
             fetch(port + '/connect-sub', {
                 method: "PUT",
-                body: JSON.stringify(responseGraph)
+                body: JSON.stringify(data)
             }).then(res => res.json())
-                .then(setResponseGraph);
+                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: []}); setData(res)});
         }
     }
 
@@ -113,24 +58,9 @@ export default function App() {
             setLoading(true);
             fetch(port + '/connect-random', {
                 method: "PUT",
-                body: JSON.stringify(responseGraph)
+                body: JSON.stringify(data)
             }).then(res => res.json())
-                .then(setResponseGraph);
-        }
-    }
-
-    /**
-     * Generating graph
-     */
-    const getVertexCover = () => {
-        if (!loading) {
-            setLoading(true);
-            fetch(port + '/vertex-cover', {
-                method: "POST",
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({graph: responseGraph.graph, k: vertexCover})
-            }).then(res => res.json())
-                .then(setResponseVertices);
+                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: []}); setData(res)});
         }
     }
 
@@ -145,26 +75,23 @@ export default function App() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({"vertices": vertices, "probability": probability})
             }).then(res => res.json())
-                .then(setResponseGraph);
+                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: []}); setData(res)});
         }
     }
 
     /**
-     * Converting our python graph to react-d3-graph
+     * Generating graph
      */
-    function graphToD3Graph(graph: any): { nodes: { id: number }[], links: { source: number, target: number }[] } {
-        let nodes: { id: number }[] = []
-        let links: { source: number, target: number }[] = []
-        Object.keys(graph).forEach(v => {
-            nodes.push({id: +v});
-
-            graph[v].forEach((l: number) => {
-                if (links.filter(link => (link.source === +v && link.target === l) || (link.source === l && link.target === +v)).length === 0)
-                    links.push({source: +v, target: l});
-            });
-        });
-
-        return {nodes: nodes, links: links};
+    const getVertexCover = () => {
+        if (!loading) {
+            setLoading(true);
+            fetch(port + '/vertex-cover', {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({graph: data.graph, k: vertexCover})
+            }).then(res => res.json())
+                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: res.vertices})});
+        }
     }
 
     return (
@@ -235,12 +162,15 @@ export default function App() {
                     >Generate graph</Button>
                 </FormGroup>
             </Card>
-            <div className="container__graph-area">
+            <div className="container__graph-area" ref={graphRef}>
                 <Graph
-                    ref={graphRef}
                     id="graph-id"
-                    data={data}
-                    config={{staticGraph: false}}
+                    data={convertToD3Graph(data.graph, coverVertices)}
+                    config={{
+                        staticGraph: false,
+                        height: graphRef.current != null? graphRef.current.offsetHeight : 0,
+                        width: graphRef.current != null? graphRef.current.offsetWidth : 0
+                    }}
                 />
                 <div style={{
                     position: "absolute",
