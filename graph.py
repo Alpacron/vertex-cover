@@ -124,39 +124,52 @@ class Graph:
                 self.add_edge(random.choice(sub), i)
                 break
 
-    def vertex_cover_brute(self, k, fewest=None, current=None, covered=None):
+    def vertex_cover_brute(self, k, depth=1, result=None, current=None, covered=None, highest_covered=0):
         """
         Find minimum required vertices that cover all edges.
         """
-        if fewest is None:
-            fewest = []
+        if result is None:
+            result = []
         if covered is None:
             covered = []
         if current is None:
             current = []
 
+        vertices = self.vertices()
+        edges = self.edges()
+
+        if k >= len(vertices):
+            return vertices, len(edges)
+
         # If current covered contains all edges, set fewest to current and backtrack
-        if len([e for e in self.edges() if e in covered or (e[1], e[0]) in covered]) == len(self.edges()):
+        if k == -1 and len([e for e in edges if e in covered or (e[1], e[0]) in covered]) == len(edges):
             # If current is bigger than fewest, we backtrack.
-            if len(current) < len(fewest) or fewest == []:
-                fewest = current
+            if len(current) < len(result) or result == []:
+                highest_covered = len(edges)
+                result = current
+
+        if k == len(current) and len(covered) > highest_covered:
+            highest_covered = len(covered)
+            result = current
 
         # Recursively do this for all vertices (randomly), until a solution is found.
-        elif len(current) < len(fewest) or fewest == []:
-            vertices = [e for e in self.vertices() if e not in current]
+        if (k == -1 and (len(current) < len(result) or result == []) and not len(
+                [e for e in edges if e in covered or (e[1], e[0]) in covered]) == len(edges)) or (
+                len(current) < k and len(edges) > highest_covered):
+            vertices = [e for e in vertices if e not in current]
             random.shuffle(vertices)
             for v in vertices:
-                c = covered + [e for e in self.vertex_edges(v, k) if not (e in covered or (e[1], e[0]) in covered)]
-                fewest = self.vertex_cover_brute(k, fewest, current + [v], c)
+                c = covered + [e for e in self.vertex_edges(v, depth) if not (e in covered or (e[1], e[0]) in covered)]
+                result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered)
 
-        return fewest
+        return result, highest_covered
 
-    def vertex_edges(self, vertex, k=1, depth=0, covered=None):
+    def vertex_edges(self, vertex, depth=1, current_depth=0, covered=None):
         if covered is None:
             covered = []
 
-        if depth < k:
+        if current_depth < depth:
             for v in [e for e in self.graph[str(vertex)] if not ((vertex, e) in covered or (e, vertex) in covered)]:
-                covered = self.vertex_edges(v, k, depth + 1, covered + [(vertex, v)])
+                covered = self.vertex_edges(v, depth, current_depth + 1, covered + [(vertex, v)])
 
         return covered

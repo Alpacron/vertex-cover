@@ -42,10 +42,12 @@ def connect(g: UpdateItem):
 
 class CoverItem(BaseModel):
     graph: Any
+    depth: int
     k: int
 
 
 @app.post("/vertex-cover")
 def connect(c: CoverItem):
     graph = Graph(c.graph)
-    return {"vertices": graph.vertex_cover_brute(c.k)}
+    print(c.k)
+    return {"vertices": graph.vertex_cover_brute(c.k, c.depth)[0]}

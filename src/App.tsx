@@ -1,5 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {Button, ButtonGroup, Card, Elevation, FormGroup, NumericInput, Spinner} from "@blueprintjs/core";
+import {
+    Button, ButtonGroup, NumericInput, FormGroup,
+    Card, Spinner, H6
+} from "@blueprintjs/core";
 import {Graph} from "react-d3-graph";
 import useWindowDimensions from "./Util/useWindowDimensions";
 import convertToD3Graph from "./Util/convertToD3Graph";
@@ -11,7 +14,8 @@ export default function App() {
     const [probability, setProbability] = useState(1);
     const [data, setData] = useState<{ graph: {} }>({graph: {}});
     const [coverVertices, setCoverVertices] = useState<number[]>([]);
-    const [vertexCover, setVertexCover] = useState(1);
+    const [coverK, setCoverK] = useState<number>(-1);
+    const [coverDepth, setCoverDepth] = useState<number>(1);
     const [loading, setLoading] = useState(false);
     const {width, height} = useWindowDimensions();
     const graphRef = useRef<HTMLDivElement>(null)
@@ -20,26 +24,17 @@ export default function App() {
         // TODO: Restart simulation (or center graph) upon resizing.
     }, [width, height])
 
-    /**
-     * Do on document load
-     */
     useEffect(() => {
         generateGraph();
         setProbability(0.5);
     }, [])
 
-    /**
-     * Do on document load
-     */
     useEffect(() => {
-        if(coverVertices.length > 0) {
+        if (coverVertices.length > 0) {
             setCoverVertices([]);
         }
-    }, [vertexCover])
+    }, [coverDepth])
 
-    /**
-     * Connecting two sub graphs
-     */
     const connectSubGraphs = () => {
         if (!loading) {
             setLoading(true);
@@ -55,9 +50,6 @@ export default function App() {
         }
     }
 
-    /**
-     * Connecting two vertices
-     */
     const connectVertices = () => {
         if (!loading) {
             setLoading(true);
@@ -73,9 +65,6 @@ export default function App() {
         }
     }
 
-    /**
-     * Generating graph
-     */
     const generateGraph = () => {
         if (!loading) {
             setLoading(true);
@@ -92,16 +81,13 @@ export default function App() {
         }
     }
 
-    /**
-     * Generating graph
-     */
     const getVertexCover = () => {
         if (!loading) {
             setLoading(true);
             fetch(port + '/vertex-cover', {
                 method: "POST",
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({graph: data.graph, k: vertexCover})
+                body: JSON.stringify({graph: data.graph, depth: coverDepth, k: coverK})
             }).then(res => res.json())
                 .then(res => {
                     setLoading(false);
@@ -110,9 +96,9 @@ export default function App() {
         }
     }
 
-    const onClickNode = function(nodeId: string) {
+    const onClickNode = function (nodeId: string) {
         let c = Object.assign([], coverVertices);
-        if(c.indexOf(+nodeId, 0) > -1)
+        if (c.indexOf(+nodeId, 0) > -1)
             c.splice(coverVertices.indexOf(+nodeId, 0), 1);
         else
             c.push(+nodeId);
@@ -121,9 +107,10 @@ export default function App() {
 
     return (
         <div
-            style={{display: "flex", flexDirection: "column", flex: "auto"}}
+            style={{display: "flex", flexDirection: "column", flex: "auto", overflow: "hidden"}}
         >
             <Card style={{overflowY: "scroll"}}>
+                <H6>Directed Graph</H6>
                 <FormGroup
                     label="Number of vertices"
                     labelFor="vertices"
@@ -146,24 +133,7 @@ export default function App() {
                         stepSize={0.1}
                         id="probability"
                         value={probability}
-                        onValueChange={valueAsNumber => setProbability(valueAsNumber)}
-                    />
-                </FormGroup>
-                <FormGroup
-                    style={{display: "flex", flexDirection: "column"}}
-                    label="Brute force search"
-                    labelFor="brute"
-                    labelInfo="(vertex cover k)"
-                >
-                    <Button
-                        style={{marginRight: '15px'}}
-                        onClick={getVertexCover}
-                    >Search</Button>
-                    <NumericInput
-                        min={1}
-                        id="brute"
-                        value={vertexCover}
-                        onValueChange={valueAsNumber => setVertexCover(valueAsNumber)}
+                        onValueChange={setProbability}
                     />
                 </FormGroup>
                 <ButtonGroup style={{marginRight: "1em"}}>
@@ -181,11 +151,44 @@ export default function App() {
                         onClick={connectVertices}
                     >Connect vertices</Button>
                 </ButtonGroup>
+
+                <H6>Vertex Cover</H6>
+                <FormGroup
+                    style={{display: "flex", flexDirection: "column"}}
+                    label="vertex amount k"
+                    labelFor="coverK"
+                >
+                    <NumericInput
+                        min={-1}
+                        id="coverK"
+                        title="-1 = minimum k required"
+                        value={coverK}
+                        onValueChange={setCoverK}
+                    />
+                </FormGroup>
+                <FormGroup
+                    style={{display: "flex", flexDirection: "column"}}
+                    label="vertex cover depth"
+                    labelFor="depth"
+                >
+                    <NumericInput
+                        min={1}
+                        id="depth"
+                        title="amount of edges a single vortex can reach"
+                        value={coverDepth}
+                        onValueChange={setCoverDepth}
+                    />
+                </FormGroup>
+                <ButtonGroup>
+                    <Button
+                        onClick={getVertexCover}
+                    >Brute force search</Button>
+                </ButtonGroup>
             </Card>
             <div className="container__graph-area" ref={graphRef}>
                 <Graph
                     id="graph-id"
-                    data={convertToD3Graph(data.graph, vertexCover, coverVertices)}
+                    data={convertToD3Graph(data.graph, coverDepth != undefined ? coverDepth : 1, coverVertices)}
                     onClickNode={onClickNode}
                     config={{
                         staticGraph: false,
