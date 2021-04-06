@@ -10,8 +10,8 @@ export default function App() {
     const port = 'http://localhost:8000';
     const [vertices, setVertices] = useState(2);
     const [probability, setProbability] = useState(1);
-    const [data, setData] = useState<{graph: {}}>({graph: {}});
-    const [coverVertices, setCoverVertices] = useState<{k: number, cover: number[]}>({k: 1, cover: []});
+    const [data, setData] = useState<{ graph: {} }>({graph: {}});
+    const [coverVertices, setCoverVertices] = useState<{ k: number, cover: number[] }>({k: 1, cover: []});
     const [vertexCover, setVertexCover] = useState(1);
     const [loading, setLoading] = useState(false);
     const {width, height} = useWindowDimensions();
@@ -46,7 +46,11 @@ export default function App() {
                 method: "PUT",
                 body: JSON.stringify(data)
             }).then(res => res.json())
-                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: []}); setData(res)});
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices({k: vertexCover, cover: []});
+                    setData(res)
+                });
         }
     }
 
@@ -60,7 +64,11 @@ export default function App() {
                 method: "PUT",
                 body: JSON.stringify(data)
             }).then(res => res.json())
-                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: []}); setData(res)});
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices({k: vertexCover, cover: []});
+                    setData(res)
+                });
         }
     }
 
@@ -75,7 +83,11 @@ export default function App() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({"vertices": vertices, "probability": probability})
             }).then(res => res.json())
-                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: []}); setData(res)});
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices({k: vertexCover, cover: []});
+                    setData(res)
+                });
         }
     }
 
@@ -90,7 +102,10 @@ export default function App() {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({graph: data.graph, k: vertexCover})
             }).then(res => res.json())
-                .then(res => {setLoading(false); setCoverVertices({k: vertexCover, cover: res.vertices})});
+                .then(res => {
+                    setLoading(false);
+                    setCoverVertices({k: vertexCover, cover: res.vertices})
+                });
         }
     }
 
@@ -168,8 +183,8 @@ export default function App() {
                     data={convertToD3Graph(data.graph, coverVertices)}
                     config={{
                         staticGraph: false,
-                        height: graphRef.current != null? graphRef.current.offsetHeight : 0,
-                        width: graphRef.current != null? graphRef.current.offsetWidth : 0
+                        height: graphRef.current != null ? graphRef.current.offsetHeight : 0,
+                        width: graphRef.current != null ? graphRef.current.offsetWidth : 0
                     }}
                 />
                 <div style={{
