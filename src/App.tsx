@@ -15,7 +15,8 @@ export default function App() {
     const {width, height} = useWindowDimensions();
 
     useEffect(() => {
-        // TODO: Restart simulation
+        // TODO: Restart simulation (or center graph) upon resizing.
+        graphRef.current
     }, [width, height])
 
     const connectGraph = () => {
