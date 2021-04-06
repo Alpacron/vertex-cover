@@ -11,7 +11,7 @@ export default function App() {
     const [vertices, setVertices] = useState(2);
     const [probability, setProbability] = useState(1);
     const [data, setData] = useState<{ graph: {} }>({graph: {}});
-    const [coverVertices, setCoverVertices] = useState<{ k: number, cover: number[] }>({k: 1, cover: []});
+    const [coverVertices, setCoverVertices] = useState<number[]>([]);
     const [vertexCover, setVertexCover] = useState(1);
     const [loading, setLoading] = useState(false);
     const {width, height} = useWindowDimensions();
@@ -30,6 +30,15 @@ export default function App() {
     }, [])
 
     /**
+     * Do on document load
+     */
+    useEffect(() => {
+        if(coverVertices.length > 0) {
+            setCoverVertices([]);
+        }
+    }, [vertexCover])
+
+    /**
      * Connecting two sub graphs
      */
     const connectSubGraphs = () => {
@@ -41,7 +50,7 @@ export default function App() {
             }).then(res => res.json())
                 .then(res => {
                     setLoading(false);
-                    setCoverVertices({k: vertexCover, cover: []});
+                    setCoverVertices([]);
                     setData(res)
                 });
         }
@@ -59,7 +68,7 @@ export default function App() {
             }).then(res => res.json())
                 .then(res => {
                     setLoading(false);
-                    setCoverVertices({k: vertexCover, cover: []});
+                    setCoverVertices([]);
                     setData(res)
                 });
         }
@@ -78,7 +87,7 @@ export default function App() {
             }).then(res => res.json())
                 .then(res => {
                     setLoading(false);
-                    setCoverVertices({k: vertexCover, cover: []});
+                    setCoverVertices([]);
                     setData(res)
                 });
         }
@@ -97,18 +106,18 @@ export default function App() {
             }).then(res => res.json())
                 .then(res => {
                     setLoading(false);
-                    setCoverVertices({k: vertexCover, cover: res.vertices})
+                    setCoverVertices(res.vertices)
                 });
         }
     }
 
     const onClickNode = function(nodeId: string) {
-        let c = Object.assign([], coverVertices.cover);
+        let c = Object.assign([], coverVertices);
         if(c.indexOf(+nodeId, 0) > -1)
-            c.splice(coverVertices.cover.indexOf(+nodeId, 0), 1);
+            c.splice(coverVertices.indexOf(+nodeId, 0), 1);
         else
             c.push(+nodeId);
-        setCoverVertices({k: coverVertices.k, cover: c});
+        setCoverVertices(c);
     };
 
     return (
@@ -182,7 +191,7 @@ export default function App() {
             <div className="container__graph-area" ref={graphRef}>
                 <Graph
                     id="graph-id"
-                    data={convertToD3Graph(data.graph, coverVertices)}
+                    data={convertToD3Graph(data.graph, vertexCover, coverVertices)}
                     onClickNode={onClickNode}
                     config={{
                         staticGraph: false,
