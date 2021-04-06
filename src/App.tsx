@@ -235,7 +235,7 @@ export default function App() {
                     >Generate graph</Button>
                 </FormGroup>
             </Card>
-            <div className="container__graph-area" style={{margin: "1em", overflow: "hidden", flex: "auto", display: "flex", flexDirection: "column"}}>
+            <div className="container__graph-area">
                 <Graph
                     ref={graphRef}
                     id="graph-id"

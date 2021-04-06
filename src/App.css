@@ -22,8 +22,29 @@
 .container__graph-area {
     max-height: 1000px;
     border: 1px dotted gray;
-    margin-left: 20px;
-    margin-top: 4px;
     z-index: 1;
     overflow: hidden;
+    margin: 1em;
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#graph-id-graph-wrapper {
+    flex: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#graph-id-graph-wrapper svg {
+    flex: auto;
+}
+
+.bp3-form-content {
+    display: flex;
+}
+
+@keyframes fadeOut {
+    33% {opacity: 1;}
+    100% {opacity: 0;}
 }
