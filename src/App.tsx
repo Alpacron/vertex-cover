@@ -1,7 +1,9 @@
-import React, {useState, useEffect} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button, Card, Elevation, FormGroup, NumericInput} from "@blueprintjs/core";
 import {Graph, GraphData} from "react-d3-graph";
 import CircularProgress from '@material-ui/core/CircularProgress';
+import useWindowDimensions from "./Util/useWindowDimensions";
+import './App.css';
 
 export default function App() {
     const port = 'http://localhost:8000';
@@ -12,6 +14,12 @@ export default function App() {
     const [data, setData] = useState<GraphData<any, any>>({nodes: [], links: []});
     const [vertexCover, setVertexCover] = useState(1);
     const [loading, setLoading] = useState(false);
+    const graphRef = useRef<Graph<any, any>>(null)
+    const {width, height} = useWindowDimensions();
+
+    useEffect(() => {
+        // TODO: Restart simulation (or center graph) upon resizing.
+    }, [width, height])
 
     /**
      * Do on document load
@@ -227,8 +235,9 @@ export default function App() {
                     >Generate graph</Button>
                 </FormGroup>
             </Card>
-            <div style={{margin: "1em", overflow: "hidden", flex: "auto", display: "flex", flexDirection: "column"}}>
+            <div className="container__graph-area" style={{margin: "1em", overflow: "hidden", flex: "auto", display: "flex", flexDirection: "column"}}>
                 <Graph
+                    ref={graphRef}
                     id="graph-id"
                     data={data}
                     config={{staticGraph: false}}
