@@ -1,8 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {
-    Button, ButtonGroup, NumericInput, FormGroup,
-    Card, Spinner, H6
-} from "@blueprintjs/core";
+import {Button, ButtonGroup, Card, FormGroup, H6, NumericInput, Spinner} from "@blueprintjs/core";
 import {Graph} from "react-d3-graph";
 import useWindowDimensions from "./Util/useWindowDimensions";
 import convertToD3Graph from "./Util/convertToD3Graph";
@@ -106,85 +103,104 @@ export default function App() {
     };
 
     return (
-        <div
-            style={{display: "flex", flexDirection: "column", flex: "auto", overflow: "hidden"}}
-        >
-            <Card style={{overflowY: "scroll"}}>
-                <H6>Directed Graph</H6>
-                <FormGroup
-                    label="Number of vertices"
-                    labelFor="vertices"
-                >
-                    <NumericInput
-                        min={1}
-                        id="vertices"
-                        value={vertices}
-                        onValueChange={valueAsNumber => setVertices(valueAsNumber)}
-                    />
-                </FormGroup>
-                <FormGroup
-                    label="Density of edges"
-                    labelFor="probability"
-                    labelInfo="(probability p)"
-                >
-                    <NumericInput
-                        min={0}
-                        max={1}
-                        stepSize={0.1}
-                        id="probability"
-                        value={probability}
-                        onValueChange={setProbability}
-                    />
-                </FormGroup>
-                <ButtonGroup style={{marginRight: "1em"}}>
-                    <Button
-                        onClick={generateGraph}
-                    >Generate graph</Button>
-                </ButtonGroup>
-                <ButtonGroup>
-                    <Button
-                        title="Connect two random disconnected sub graphs"
-                        onClick={connectSubGraphs}
-                    >Connect sub graphs</Button>
-                    <Button
-                        title="Connect two random disconnected vertices"
-                        onClick={connectVertices}
-                    >Connect vertices</Button>
-                </ButtonGroup>
-
-                <H6>Vertex Cover</H6>
-                <FormGroup
-                    style={{display: "flex", flexDirection: "column"}}
-                    label="vertex amount k"
-                    labelFor="coverK"
-                >
-                    <NumericInput
-                        min={-1}
-                        id="coverK"
-                        title="-1 = minimum k required"
-                        value={coverK}
-                        onValueChange={setCoverK}
-                    />
-                </FormGroup>
-                <FormGroup
-                    style={{display: "flex", flexDirection: "column"}}
-                    label="vertex cover depth"
-                    labelFor="depth"
-                >
-                    <NumericInput
-                        min={1}
-                        id="depth"
-                        title="amount of edges a single vortex can reach"
-                        value={coverDepth}
-                        onValueChange={setCoverDepth}
-                    />
-                </FormGroup>
-                <ButtonGroup>
-                    <Button
-                        onClick={getVertexCover}
-                    >Brute force search</Button>
-                </ButtonGroup>
+        <div style={{display: "flex", flexDirection: "column", flex: "auto", overflow: "hidden"}}>
+            <Card style={{display: "flex", flexDirection: "row", overflowY: "scroll"}}>
+                <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
+                    <H6>Directed Graph</H6>
+                    <FormGroup
+                        label="Number of vertices"
+                        labelFor="vertices"
+                    >
+                        <NumericInput
+                            min={1}
+                            id="vertices"
+                            value={vertices}
+                            onValueChange={valueAsNumber => setVertices(valueAsNumber)}
+                        />
+                    </FormGroup>
+                    <FormGroup
+                        label="Density of edges"
+                        labelFor="probability"
+                        labelInfo="(probability p)"
+                    >
+                        <NumericInput
+                            min={0}
+                            max={1}
+                            stepSize={0.1}
+                            id="probability"
+                            value={probability}
+                            onValueChange={setProbability}
+                        />
+                    </FormGroup>
+                    <ButtonGroup style={{marginRight: "1em"}}>
+                        <Button
+                            onClick={generateGraph}
+                        >Generate graph</Button>
+                    </ButtonGroup>
+                </div>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: "2em"
+                }}>
+                    <H6>Connected</H6>
+                    <FormGroup>
+                        <Button
+                            title="Connect two random disconnected sub graphs"
+                            onClick={connectSubGraphs}
+                        >Connect sub graphs</Button>
+                    </FormGroup>
+                    <FormGroup>
+                        <Button
+                            title="Connect two random disconnected vertices"
+                            onClick={connectVertices}
+                        >Connect vertices</Button>
+                    </FormGroup>
+                </div>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: "2em"
+                }}>
+                    <H6>Vertex Cover</H6>
+                    <FormGroup
+                        style={{display: "flex", flexDirection: "column"}}
+                        label="Size k vertex cover"
+                        labelFor="coverK"
+                    >
+                        <NumericInput
+                            min={-1}
+                            id="coverK"
+                            title="-1 = minimum k required"
+                            value={coverK}
+                            onValueChange={setCoverK}
+                        />
+                    </FormGroup>
+                    <FormGroup
+                        style={{display: "flex", flexDirection: "column"}}
+                        label="Vertex cover depth"
+                        labelFor="depth"
+                    >
+                        <NumericInput
+                            min={1}
+                            id="depth"
+                            title="Amount of edges a single vortex can reach"
+                            value={coverDepth}
+                            onValueChange={setCoverDepth}
+                        />
+                    </FormGroup>
+                    <ButtonGroup>
+                        <Button
+                            onClick={getVertexCover}
+                        >Brute force search</Button>
+                    </ButtonGroup>
+                </div>
             </Card>
+
             <div className="container__graph-area" ref={graphRef}>
                 <Graph
                     id="graph-id"
@@ -193,7 +209,9 @@ export default function App() {
                     config={{
                         staticGraph: false,
                         height: graphRef.current != null ? graphRef.current.offsetHeight : 0,
-                        width: graphRef.current != null ? graphRef.current.offsetWidth : 0
+                        width: graphRef.current != null ? graphRef.current.offsetWidth : 0,
+                        minZoom: 1,
+                        maxZoom: 8
                     }}
                 />
                 <div style={{
