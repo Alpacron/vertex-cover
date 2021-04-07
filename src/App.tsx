@@ -15,10 +15,11 @@ export default function App() {
     const [coverDepth, setCoverDepth] = useState<number>(1);
     const [loading, setLoading] = useState(false);
     const {width, height} = useWindowDimensions();
-    const graphRef = useRef<HTMLDivElement>(null)
+    const graphBoundingRef = useRef<HTMLDivElement>(null);
+    const graphRef = useRef<Graph<any, any>>(null);
 
     useEffect(() => {
-        // TODO: Restart simulation (or center graph) upon resizing.
+        centerNodes();
     }, [width, height])
 
     useEffect(() => {
@@ -90,6 +91,27 @@ export default function App() {
                     setLoading(false);
                     setCoverVertices(res.vertices)
                 }).catch(() => setLoading(false));
+        }
+    }
+
+    function centerNodes() {
+        if (graphRef.current != null && graphRef.current.state.nodes[0] != undefined && graphBoundingRef.current != null) {
+            let nodeCount = Object.keys(graphRef.current.state.nodes).length;
+            let sumX = 0;
+            let sumY = 0;
+            let boundingBox = graphBoundingRef.current.getBoundingClientRect();
+            Object.keys(graphRef.current.state.nodes).forEach(node => {
+                if (graphRef.current != null) {
+                    sumX += graphRef.current.state.nodes[node].x;
+                    sumY += graphRef.current.state.nodes[node].y;
+                }
+            });
+            Object.keys(graphRef.current.state.nodes).forEach((node: any) => {
+                if (graphRef.current != null && graphBoundingRef.current != null) {
+                    graphRef.current.state.nodes[node].x += ((boundingBox.width / 2)) - (sumX / nodeCount);
+                    graphRef.current.state.nodes[node].y += ((boundingBox.height / 2)) - (sumY / nodeCount);
+                }
+            });
         }
     }
 
@@ -201,15 +223,16 @@ export default function App() {
                 </div>
             </Card>
 
-            <div className="container__graph-area" ref={graphRef}>
+            <div className="container__graph-area" ref={graphBoundingRef}>
                 <Graph
                     id="graph-id"
+                    ref={graphRef}
                     data={convertToD3Graph(data.graph, coverDepth != undefined ? coverDepth : 1, coverVertices)}
                     onClickNode={onClickNode}
                     config={{
                         staticGraph: false,
-                        height: graphRef.current != null ? graphRef.current.offsetHeight : 0,
-                        width: graphRef.current != null ? graphRef.current.offsetWidth : 0,
+                        height: graphBoundingRef.current != null ? graphBoundingRef.current.offsetHeight : 0,
+                        width: graphBoundingRef.current != null ? graphBoundingRef.current.offsetWidth : 0,
                         minZoom: 1,
                         maxZoom: 8
                     }}
