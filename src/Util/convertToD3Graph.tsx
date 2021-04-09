@@ -12,7 +12,7 @@ function getCover(graph: any, vertex: number, depth: number, currentDepth: numbe
     return covered
 }
 
-export default function convertToD3Graph(graph: any, depth: number, cover: number[]): GraphData<any, any> {
+export default function (graph: any, depth: number, cover: number[]): GraphData<any, any> {
     let nodes: { id: number, color: string }[] = [];
     let links: { source: number, target: number, color: string }[] = [];
     let covered: { source: number, target: number }[] = [];

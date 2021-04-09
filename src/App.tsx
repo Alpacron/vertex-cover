@@ -1,98 +1,112 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, ButtonGroup, Card, FormGroup, H6, NumericInput, Spinner} from "@blueprintjs/core";
-import {Graph} from "react-d3-graph";
 import useWindowDimensions from "./Util/useWindowDimensions";
 import convertToD3Graph from "./Util/convertToD3Graph";
+import Popup from "./Components/Popup";
 import './App.css';
+import Clock from "./Components/Clock";
+import {Graph} from "react-d3-graph";
 
-export default function App() {
+export default function () {
     const port = 'http://localhost:8000';
     const [vertices, setVertices] = useState(2);
-    const [probability, setProbability] = useState(1);
+    const [probability, setProbability] = useState(0.5);
     const [data, setData] = useState<{ graph: {} }>({graph: {}});
     const [coverVertices, setCoverVertices] = useState<number[]>([]);
     const [coverK, setCoverK] = useState<number>(-1);
     const [coverDepth, setCoverDepth] = useState<number>(1);
-    const [loading, setLoading] = useState(false);
+    const [query, setQuery] = React.useState<PromiseWithCancel<any> | undefined>();
     const {width, height} = useWindowDimensions();
     const graphBoundingRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<Graph<any, any>>(null);
 
     useEffect(() => {
         centerNodes();
-    }, [width, height])
+    }, [width, height]);
 
     useEffect(() => {
-        generateGraph();
-        setProbability(0.5);
-    }, [])
+        setData({graph: {"0": [1], "1": [0]}});
+    }, []);
 
     useEffect(() => {
         if (coverVertices.length > 0) {
             setCoverVertices([]);
         }
-    }, [coverDepth])
+    }, [coverDepth]);
+
+    interface PromiseWithCancel<T> extends Promise<T> {
+        cancel: () => void;
+        dateTime: Date;
+        name: string
+    }
+
+    function doFetch(url: string, method: string, body: string, resolve?: (res: any) => void, name?: string) {
+        if (!query) {
+            const controller = new AbortController();
+            const signal = controller.signal;
+            const promise = new Promise(async () => {
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        body: body,
+                        signal
+                    });
+                    const data = await response.json();
+                    setQuery(undefined);
+                    if (resolve)
+                        resolve(data);
+                } catch (ex: any) {
+                    if (ex && ex.name === "AbortError") {
+                        setQuery(undefined);
+                    }
+                }
+            });
+            (promise as PromiseWithCancel<any>).cancel = () => controller.abort();
+            (promise as PromiseWithCancel<any>).dateTime = new Date();
+            if (name)
+                (promise as PromiseWithCancel<any>).name = name;
+            setQuery((promise as PromiseWithCancel<any>));
+        }
+    }
 
     const connectSubGraphs = () => {
-        if (!loading) {
-            setLoading(true);
-            fetch(port + '/connect-sub', {
-                method: "PUT",
-                body: JSON.stringify(data)
-            }).then(res => res.json())
-                .then(res => {
-                    setLoading(false);
-                    setCoverVertices([]);
-                    setData(res)
-                }).catch(() => setLoading(false));
-        }
+        doFetch(port + '/connect-sub', "PUT", JSON.stringify(data), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "connect sub graph");
     }
 
     const connectVertices = () => {
-        if (!loading) {
-            setLoading(true);
-            fetch(port + '/connect-random', {
-                method: "PUT",
-                body: JSON.stringify(data)
-            }).then(res => res.json())
-                .then(res => {
-                    setLoading(false);
-                    setCoverVertices([]);
-                    setData(res)
-                }).catch(() => setLoading(false));
-        }
+        doFetch(port + '/connect-random', "PUT", JSON.stringify(data), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "connect vertices");
     }
 
     const generateGraph = () => {
-        if (!loading) {
-            setLoading(true);
-            fetch(port + '/generate', {
-                method: "POST",
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({"vertices": vertices, "probability": probability})
-            }).then(res => res.json())
-                .then(res => {
-                    setLoading(false);
-                    setCoverVertices([]);
-                    setData(res)
-                }).catch(() => setLoading(false));
-        }
+        doFetch(port + '/generate', "POST", JSON.stringify({"vertices": vertices, "probability": probability}), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "generate graph");
+
     }
 
     const getVertexCover = () => {
-        if (!loading) {
-            setLoading(true);
-            fetch(port + '/vertex-cover', {
-                method: "POST",
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({graph: data.graph, depth: coverDepth, k: coverK})
-            }).then(res => res.json())
-                .then(res => {
-                    setLoading(false);
-                    setCoverVertices(res.vertices)
-                }).catch(() => setLoading(false));
-        }
+        doFetch(port + '/vertex-cover', "POST", JSON.stringify({
+            graph: data.graph,
+            depth: coverDepth,
+            k: coverK
+        }), res => setCoverVertices(res.vertices), "vertex cover search");
     }
+
+    const onClickNode = function (nodeId: string) {
+        let c = Object.assign([], coverVertices);
+        if (c.indexOf(+nodeId, 0) > -1)
+            c.splice(coverVertices.indexOf(+nodeId, 0), 1);
+        else
+            c.push(+nodeId);
+        setCoverVertices(c);
+    };
 
     function centerNodes() {
         if (graphRef.current != null && graphRef.current.state.nodes[0] != undefined && graphBoundingRef.current != null) {
@@ -115,17 +129,18 @@ export default function App() {
         }
     }
 
-    const onClickNode = function (nodeId: string) {
-        let c = Object.assign([], coverVertices);
-        if (c.indexOf(+nodeId, 0) > -1)
-            c.splice(coverVertices.indexOf(+nodeId, 0), 1);
-        else
-            c.push(+nodeId);
-        setCoverVertices(c);
-    };
-
     return (
         <div style={{display: "flex", flexDirection: "column", flex: "auto", overflow: "hidden"}}>
+            <Popup open={query != undefined} x={width / 2} y={20} transitionFade="0.5s" centerX
+                   style={{transitionDelay: query ? "0.5s" : "0s"}}>
+                <Card elevation={2}>
+                    <p>
+                        <Clock minus={query ? query.dateTime.getTime() : 0} divider={1000}/>
+                        <p style={{display: "contents"}}>{query ? " seconds on task: " + query.name : ""}</p>
+                    </p>
+                    <Button intent="danger" onClick={() => query?.cancel()}>Cancel</Button>
+                </Card>
+            </Popup>
             <Card style={{display: "flex", flexDirection: "row", overflowY: "scroll"}}>
                 <div style={{display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center"}}>
                     <H6>Directed Graph</H6>
@@ -191,8 +206,9 @@ export default function App() {
                     <H6>Vertex Cover</H6>
                     <FormGroup
                         style={{display: "flex", flexDirection: "column"}}
-                        label="Size k vertex cover"
+                        label="Number of vertices"
                         labelFor="coverK"
+                        labelInfo="(size k)"
                     >
                         <NumericInput
                             min={-1}
@@ -204,7 +220,7 @@ export default function App() {
                     </FormGroup>
                     <FormGroup
                         style={{display: "flex", flexDirection: "column"}}
-                        label="Vertex cover depth"
+                        label="Vertex reach"
                         labelFor="depth"
                     >
                         <NumericInput
@@ -240,7 +256,9 @@ export default function App() {
                 <div style={{
                     position: "absolute",
                     pointerEvents: "none",
-                    animation: loading ? '' : 'fadeOut 0.5s forwards'
+                    opacity: query ? 1 : 0,
+                    transition: query ? "opacity 0.1s" : "opacity 0.3s",
+                    transitionDelay: query ? "0.05s" : "0.2s"
                 }}>
                     <Spinner/>
                 </div>
