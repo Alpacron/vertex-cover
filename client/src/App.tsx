@@ -8,7 +8,7 @@ import Clock from "./Components/Clock";
 import {Graph} from "react-d3-graph";
 
 export default function () {
-    const port = 'http://localhost:8000';
+    const server = process.env.REACT_APP_SERVER_URL;
     const [vertices, setVertices] = useState(2);
     const [probability, setProbability] = useState(0.5);
     const [data, setData] = useState<{ graph: {} }>({graph: {}});
@@ -70,21 +70,24 @@ export default function () {
     }
 
     const connectSubGraphs = () => {
-        doFetch(port + '/connect-sub', "PUT", JSON.stringify(data), res => {
+        doFetch(server + '/connect-sub', "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
             setData(res);
         }, "connect sub graph");
     }
 
     const connectVertices = () => {
-        doFetch(port + '/connect-random', "PUT", JSON.stringify(data), res => {
+        doFetch(server + '/connect-random', "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
             setData(res);
         }, "connect vertices");
     }
 
     const generateGraph = () => {
-        doFetch(port + '/generate', "POST", JSON.stringify({"vertices": vertices, "probability": probability}), res => {
+        doFetch(server + '/generate', "POST", JSON.stringify({
+            "vertices": vertices,
+            "probability": probability
+        }), res => {
             setCoverVertices([]);
             setData(res);
         }, "generate graph");
@@ -92,7 +95,7 @@ export default function () {
     }
 
     const getVertexCover = () => {
-        doFetch(port + '/vertex-cover', "POST", JSON.stringify({
+        doFetch(server + '/vertex-cover', "POST", JSON.stringify({
             graph: data.graph,
             depth: coverDepth,
             k: coverK
