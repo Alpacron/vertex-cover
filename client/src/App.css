@@ -33,12 +33,3 @@
 .bp3-form-content {
     display: flex;
 }
-
-@keyframes fadeOut {
-    33% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-    }
-}
