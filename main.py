@@ -6,7 +6,12 @@ import json
 from pydantic import BaseModel
 from typing import Any
 
-app = FastAPI()
+app = FastAPI(
+    title="Vertex cover",
+    description="An implementation of vertex cover visualization with kernelization, pruning, search tree "
+                "optimization and brute force.",
+    version="1.0.0"
+)
 app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['POST', 'PUT'], allow_headers=["*"])
 
 
