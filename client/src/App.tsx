@@ -96,7 +96,7 @@ export default function () {
             graph: data.graph,
             depth: coverDepth,
             k: coverK
-        }), res => setCoverVertices(res.vertices), "vertex cover search");
+        }), res => setCoverVertices(res.vertices), "Vertex cover search");
     }
 
     const onClickNode = function (nodeId: string) {
@@ -109,7 +109,7 @@ export default function () {
     };
 
     function centerNodes() {
-        if (graphRef.current != null && graphRef.current.state.nodes[0] != undefined && graphBoundingRef.current != null) {
+        if (graphRef.current != null && graphRef.current.state.nodes[0] !== undefined && graphBoundingRef.current != null) {
             let nodeCount = Object.keys(graphRef.current.state.nodes).length;
             let sumX = 0;
             let sumY = 0;
@@ -131,7 +131,7 @@ export default function () {
 
     return (
         <div style={{display: "flex", flexDirection: "column", flex: "auto", overflow: "hidden"}}>
-            <Popup open={query != undefined} x={width / 2} y={20} transitionFade="0.5s" centerX
+            <Popup open={query !== undefined} x={width / 2} y={20} transitionFade="0.5s" centerX
                    style={{transitionDelay: query ? "0.5s" : "0s"}}>
                 <Card elevation={2}>
                     <p>
@@ -243,7 +243,7 @@ export default function () {
                 <Graph
                     id="graph-id"
                     ref={graphRef}
-                    data={convertToD3Graph(data.graph, coverDepth != undefined ? coverDepth : 1, coverVertices)}
+                    data={convertToD3Graph(data.graph, coverDepth !== undefined ? coverDepth : 1, coverVertices)}
                     onClickNode={onClickNode}
                     config={{
                         staticGraph: false,

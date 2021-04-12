@@ -10,6 +10,6 @@ export default function (props: any) {
 
     return (
         <p style={{display: "contents"}}>
-            {display >= 0 && props.minus != 0? display : ""}
+            {display >= 0 && props.minus != 0 ? display : ""}
         </p>)
 }
