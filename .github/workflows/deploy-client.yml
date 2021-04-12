@@ -1,0 +1,40 @@
+name: Client - Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - client/**
+
+jobs:
+  docker:
+    name: Publish to Docker Hub
+    runs-on: ubuntu-latest
+    env:
+      REPO: ${{ secrets.DOCKER_REPO_CLIENT }}
+      working-directory: ./client
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build Docker image
+        working-directory: ${{ env.working-directory }}
+        run: docker build -t $REPO:latest -t $REPO:${GITHUB_SHA::8} .
+      - name: Publish Docker image
+        run: docker push $REPO
+
+  update:
+    name: Update service using webhooks
+    runs-on: ubuntu-latest
+    needs: [ docker ]
+    environment:
+      name: client production
+      url: https://vertex.radiationservers.com/
+    steps:
+      - name: Run curl POST request
+        run: curl -X POST ${{ secrets.WEBHOOK_CLIENT }}

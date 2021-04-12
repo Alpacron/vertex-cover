@@ -2,7 +2,7 @@ import React, {CSSProperties, useEffect, useRef, useState} from "react";
 
 export default function (props: { open: boolean, transitionFade?: string, x?: number, y?: number, centerX?: boolean, centerY?: boolean, style?: CSSProperties, children?: any }) {
     const self = useRef<HTMLDivElement>(null);
-    const [dimensions, setDimensions] = useState({ width:0, height: 0 });
+    const [dimensions, setDimensions] = useState({width: 0, height: 0});
     const [children, setChildren] = useState<any>();
 
     useEffect(() => {
@@ -12,9 +12,9 @@ export default function (props: { open: boolean, transitionFade?: string, x?: nu
                 height: self.current.offsetHeight
             });
         }
-        if(props.open)
+        if (props.open)
             setChildren(props.children);
-    }, [props.children]);
+    }, [props.open, props.children]);
 
     return (<div ref={self} style={{
         ...{
