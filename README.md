@@ -11,6 +11,8 @@ An implementation of vertex cover visualization with kernelization, pruning, sea
 
 We decided to create an interactive web application where we display the vertex cover functionality
 
+> Deployed website: [here](https://vertex.radiationservers.com/)
+
 ## Getting started
 
 ### Prerequisites
