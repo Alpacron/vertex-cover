@@ -102,6 +102,34 @@ export default function () {
         }), res => setCoverVertices(res.vertices), "Vertex cover search");
     }
 
+    const decreasePendants = () => {
+        doFetch(server + '/decrease-pendants', "PUT", JSON.stringify(data), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "decrease pendants");
+    }
+
+    const increasePendants = () => {
+        doFetch(server + '/increase-pendants', "PUT", JSON.stringify(data), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "decrease pendants");
+    }
+
+    const decreaseTops = () => {
+        doFetch(server + '/decrease-tops', "PUT", JSON.stringify(data), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "decrease pendants");
+    }
+
+    const increaseTops = () => {
+        doFetch(server + '/increase-tops', "PUT", JSON.stringify(data), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, "decrease pendants");
+    }
+
     const onClickNode = function (nodeId: string) {
         let c = Object.assign([], coverVertices);
         if (c.indexOf(+nodeId, 0) > -1)
@@ -239,6 +267,41 @@ export default function () {
                             onClick={getVertexCover}
                         >Brute force search</Button>
                     </ButtonGroup>
+                </div>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginLeft: "2em"
+                }}>
+                    <H6>Pendants and Tops</H6>
+                    <FormGroup
+                        style={{display: "flex", flexDirection: "row", alignItems: "center"}}
+                        label="Pendants"
+                    >
+                        <ButtonGroup style={{marginLeft: "1em"}}>
+                            <Button
+                                onClick={decreasePendants}
+                            >-</Button>
+                            <Button
+                                onClick={increasePendants}
+                            >+</Button>
+                        </ButtonGroup>
+                    </FormGroup>
+                    <FormGroup
+                        style={{display: "flex", flexDirection: "row", alignItems: "center"}}
+                        label="Tops"
+                    >
+                        <ButtonGroup style={{marginLeft: "1em"}}>
+                            <Button
+                                onClick={decreaseTops}
+                            >-</Button>
+                            <Button
+                                onClick={increaseTops}
+                            >+</Button>
+                        </ButtonGroup>
+                    </FormGroup>
                 </div>
             </Card>
 
