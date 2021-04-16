@@ -176,3 +176,24 @@ class Graph:
                 covered = self.vertex_edges(v, depth, current_depth + 1, covered + [(vertex, v)])
 
         return covered
+
+    def random_pendant_vertex(self, is_pendant):
+        vertices = self.vertices()
+        random.shuffle(vertices)
+        for v in vertices:
+            if (is_pendant and len(self.vertex_edges(v)) == 1) or (not is_pendant and len(self.vertex_edges(v)) != 1):
+                return v
+
+        return None
+
+    def random_tops_vertex(self, is_tops):
+        vertices = self.vertices()
+        random.shuffle(vertices)
+        k = -1
+        vertex = None
+        for v in vertices:
+            if (is_tops and len(self.vertex_edges(v)) > k) or (
+                    not is_tops and (k == -1 or len(self.vertex_edges(v)) < k)):
+                k = len(self.vertex_edges(v))
+                vertex = v
+        return vertex
