@@ -28,7 +28,7 @@ First, clone the directory.
 For backend development, first, install all Python requirements.
 
 ```commandline
-pip install -r requirements.txt
+pip install -r server/requirements.txt
 ```
 
 Then start the development server.
