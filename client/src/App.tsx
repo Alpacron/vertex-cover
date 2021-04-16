@@ -113,21 +113,21 @@ export default function () {
         doFetch(server + '/increase-pendants', "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
             setData(res);
-        }, "decrease pendants");
+        }, "increase pendants");
     }
 
     const decreaseTops = () => {
         doFetch(server + '/decrease-tops', "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
             setData(res);
-        }, "decrease pendants");
+        }, "decrease tops");
     }
 
     const increaseTops = () => {
         doFetch(server + '/increase-tops', "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
             setData(res);
-        }, "decrease pendants");
+        }, "increase tops");
     }
 
     const onClickNode = function (nodeId: string) {

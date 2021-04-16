@@ -75,6 +75,14 @@ class Graph:
         self.graph[str(u)].append(int(v))
         self.graph[str(v)].append(int(u))
 
+    def remove_edge(self, u, v):
+        """
+        Remove an edge from the graph.
+        """
+
+        self.graph[str(u)].remove(int(v))
+        self.graph[str(v)].remove(int(u))
+
     def is_connected(self, u, v):
         """
         Check if two vertices are connected.
@@ -101,6 +109,23 @@ class Graph:
 
                 if not self.is_connected(v1, v2):
                     self.add_edge(v1, v2)
+
+    def connect_vertex_to_random(self, vertex):
+        items = [i[0] for i in list(self.graph.items()) if
+                 len(self.graph[str(i[0])]) < len(self.vertices()) - 1 and int(i[0]) not in [int(vertex)] + self.graph[
+                     str(vertex)]]
+        if len(items) > 0:
+            v2 = random.choice(items)
+            not_connected = [i for i in items if len(self.graph[i]) == 0]
+            if len(not_connected) > 0:
+                v2 = random.choice(not_connected)
+            if not self.is_connected(vertex, v2):
+                self.add_edge(vertex, v2)
+
+    def remove_random_edge(self, vertex):
+        items = [i[0] for i in list(self.graph.items()) if vertex in i[1]]
+        if len(items) > 0:
+            self.remove_edge(vertex, random.choice(items))
 
     def find_sub_graph(self, v, sub):
         """
@@ -177,23 +202,51 @@ class Graph:
 
         return covered
 
-    def random_pendant_vertex(self, is_pendant):
+    def pendant_vertices(self, increase):
+        vertex = self.random_pendant_vertex(increase)
+        if vertex is not None:
+            if increase is True:
+                if len(self.graph[str(vertex)]) > 1:
+                    while len(self.graph[str(vertex)]) > 1:
+                        non_pendant_items = [i for i in self.graph[str(vertex)] if len(self.graph[str(i)]) != 1]
+                        if len(non_pendant_items) > 0:
+                            self.remove_edge(vertex, random.choice(non_pendant_items))
+                        else:
+                            self.remove_edge(vertex, random.choice(self.graph[str(vertex)]))
+                else:
+                    self.connect_vertex_to_random(vertex)
+            if increase is False:
+                self.remove_edge(vertex, random.choice(self.graph[str(vertex)]))
+
+    def random_pendant_vertex(self, increase):
         vertices = self.vertices()
         random.shuffle(vertices)
         for v in vertices:
-            if (is_pendant and len(self.vertex_edges(v)) == 1) or (not is_pendant and len(self.vertex_edges(v)) != 1):
+            if (not increase and len(self.graph[str(v)]) == 1) or (increase and len(self.graph[str(v)]) != 1):
                 return v
 
         return None
 
-    def random_tops_vertex(self, is_tops):
+    def tops_vertices(self, increase):
+        vertex, k = self.random_tops_vertex(increase)
+        if vertex is not None:
+            if increase is True:
+                while len(self.graph[str(vertex)]) <= k:
+                    self.connect_vertex_to_random(vertex)
+            if increase is False:
+                print(vertex, k)
+                while len(self.graph[str(vertex)]) >= k:
+                    self.remove_random_edge(vertex)
+
+    def random_tops_vertex(self, increase):
         vertices = self.vertices()
         random.shuffle(vertices)
-        k = -1
+        k = None
         vertex = None
         for v in vertices:
-            if (is_tops and len(self.vertex_edges(v)) > k) or (
-                    not is_tops and (k == -1 or len(self.vertex_edges(v)) < k)):
-                k = len(self.vertex_edges(v))
+            if (increase is True and len(self.graph[str(v)]) < len(self.graph.items()) - 1 and (
+                    k is None or k < len(self.graph[str(v)]))) or (
+                    increase is False and 0 < len(self.graph[str(v)]) and (k is None or len(self.graph[str(v)]) < k)):
+                k = len(self.graph[str(v)])
                 vertex = v
-        return vertex
+        return vertex, k
