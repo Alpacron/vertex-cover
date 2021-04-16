@@ -56,3 +56,31 @@ def connect(c: CoverItem):
     graph = Graph(c.graph)
     print(c.k)
     return {"vertices": graph.vertex_cover_brute(c.k, c.depth)[0]}
+
+
+@app.put("/increase-pendants")
+def increase_pendants(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.pendant_vertices(True)
+    return graph
+
+
+@app.put("/decrease-pendants")
+def decrease_pendants(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.pendant_vertices(False)
+    return graph
+
+
+@app.put("/increase-tops")
+def increase_pendants(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.tops_vertices(True)
+    return graph
+
+
+@app.put("/decrease-tops")
+def decrease_pendants(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.tops_vertices(False)
+    return graph
