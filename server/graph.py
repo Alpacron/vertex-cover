@@ -110,7 +110,7 @@ class Graph:
                 if not self.is_connected(v1, v2):
                     self.add_edge(v1, v2)
 
-    def connect_vertex_to_random(self, vertex):
+    def connect_vertex_to_random(self, vertex: int):
         items = [i[0] for i in list(self.graph.items()) if
                  len(self.graph[str(i[0])]) < len(self.vertices()) - 1 and int(i[0]) not in [int(vertex)] + self.graph[
                      str(vertex)]]
@@ -127,14 +127,14 @@ class Graph:
         if len(items) > 0:
             self.remove_edge(vertex, random.choice(items))
 
-    def find_sub_graph(self, v, sub):
+    def find_sub_graph(self, vertex: int, sub_graph):
         """
         Find subgraph connected to vertex.
         """
-        for i in self.graph[str(v)]:
-            if i not in sub:
-                sub = self.find_sub_graph(i, sub + [i])
-        return sub
+        for i in self.graph[str(vertex)]:
+            if i not in sub_graph:
+                sub_graph = self.find_sub_graph(i, sub_graph + [i])
+        return sub_graph
 
     def connect_two_sub_graphs(self):
         """
@@ -149,8 +149,11 @@ class Graph:
                 self.add_edge(random.choice(sub), i)
                 break
 
-    def vertex_cover_brute(self, k, depth=1, result=None, current=None, covered=None, highest_covered=0, edges=None,
-                           vertices=None):
+    def vertex_cover_brute(self, k: int, depth: int = 1, result: list = None, current: list = None,
+                           covered: list = None,
+                           highest_covered: int = 0,
+                           edges: list = None,
+                           vertices: list = None):
         """
         Find minimum required vertices that cover all edges.
         """
@@ -192,7 +195,7 @@ class Graph:
 
         return result, highest_covered
 
-    def vertex_edges(self, vertex, depth=1, current_depth=0, covered=None):
+    def vertex_edges(self, vertex: int, depth: int = 1, current_depth: int = 0, covered: list = None):
         if covered is None:
             covered = []
 
@@ -202,10 +205,10 @@ class Graph:
 
         return covered
 
-    def pendant_vertices(self, increase):
+    def pendant_vertices(self, increase: bool):
         vertex = self.random_pendant_vertex(increase)
         if vertex is not None:
-            if increase is True:
+            if increase:
                 if len(self.graph[str(vertex)]) > 1:
                     while len(self.graph[str(vertex)]) > 1:
                         non_pendant_items = [i for i in self.graph[str(vertex)] if len(self.graph[str(i)]) != 1]
@@ -215,10 +218,10 @@ class Graph:
                             self.remove_edge(vertex, random.choice(self.graph[str(vertex)]))
                 else:
                     self.connect_vertex_to_random(vertex)
-            if increase is False:
+            else:
                 self.remove_edge(vertex, random.choice(self.graph[str(vertex)]))
 
-    def random_pendant_vertex(self, increase):
+    def random_pendant_vertex(self, increase: bool):
         vertices = self.vertices()
         random.shuffle(vertices)
         for v in vertices:
@@ -227,26 +230,26 @@ class Graph:
 
         return None
 
-    def tops_vertices(self, increase):
+    def tops_vertices(self, increase: bool):
         vertex, k = self.random_tops_vertex(increase)
         if vertex is not None:
-            if increase is True:
+            if increase:
                 while len(self.graph[str(vertex)]) <= k:
                     self.connect_vertex_to_random(vertex)
-            if increase is False:
+            else:
                 print(vertex, k)
                 while len(self.graph[str(vertex)]) >= k:
                     self.remove_random_edge(vertex)
 
-    def random_tops_vertex(self, increase):
+    def random_tops_vertex(self, increase: bool):
         vertices = self.vertices()
         random.shuffle(vertices)
         k = None
         vertex = None
         for v in vertices:
-            if (increase is True and len(self.graph[str(v)]) < len(self.graph.items()) - 1 and (
+            if (increase and len(self.graph[str(v)]) < len(self.graph.items()) - 1 and (
                     k is None or k < len(self.graph[str(v)]))) or (
-                    increase is False and 0 < len(self.graph[str(v)]) and (k is None or len(self.graph[str(v)]) < k)):
+                    not increase and 0 < len(self.graph[str(v)]) and (k is None or len(self.graph[str(v)]) < k)):
                 k = len(self.graph[str(v)])
                 vertex = v
         return vertex, k
