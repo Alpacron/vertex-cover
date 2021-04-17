@@ -9,8 +9,8 @@ import {Graph} from "react-d3-graph";
 
 export default function () {
     const server = process.env.REACT_APP_SERVER_URL;
-    const [vertices, setVertices] = useState(2);
-    const [probability, setProbability] = useState(0.5);
+    const [vertices, setVertices] = useState<number>(2);
+    const [probability, setProbability] = useState<number>(0.5);
     const [data, setData] = useState<{ graph: {} }>({graph: {}});
     const [coverVertices, setCoverVertices] = useState<number[]>([]);
     const [coverK, setCoverK] = useState<number>(-1);
