@@ -19,20 +19,22 @@ export default function (graph: any, depth: number, cover: number[], kernel: { i
     if (cover.length > 0) {
         cover.forEach(c => covered = getCover(graph, c, depth, 0, covered));
     } else if (kernel.isolated.length > 0 || kernel.pendant.length > 0) {
-        kernel.isolated.forEach(i => covered = getCover(graph, i, 1, 0, covered))
         kernel.pendant.forEach(p => covered = getCover(graph, p, 1, 0, covered))
+        kernel.tops.forEach(t => covered = getCover(graph, t, 1, 0, covered))
     }
 
     Object.keys(graph).forEach(v => {
-        nodes.push({
-            id: +v,
-            color: cover.includes(+v) ? "#3f51b5" :
-                (kernel.isolated.includes(+v) ? "#D13913" :
-                    (kernel.tops.includes(+v) ? "#137CBD" :
-                        (kernel.pendant.includes(+v) ? "#0D8050" :
-                                "#d3d3d3"
-                        )))
-        });
+        let color = "#d3d3d3";
+        if (cover.includes(+v))
+            color = "#3f51b5";
+        else if (kernel.isolated.includes(+v))
+            color = "#D13913";
+        else if (kernel.pendant.includes(+v))
+            color = "#0D8050";
+        else if (kernel.tops.includes(+v))
+            color = "#137CBD";
+
+        nodes.push({id: +v, color: color});
 
         graph[v].forEach((l: number) => {
             // if link hasn't been added yet

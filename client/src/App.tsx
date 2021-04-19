@@ -39,7 +39,7 @@ export default function () {
     const [coverDepth, setCoverDepth] = useState<number>(1);
 
     const [kernelizationOpen, setKernelizationOpen] = useState(false);
-    const [vertexDegree, setVertexDegree] = useState<number>(0);
+    const [vertexDegree, setVertexDegree] = useState<number>(1);
 
     useEffect(() => {
         centerNodes();
