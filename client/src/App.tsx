@@ -79,9 +79,7 @@ export default function () {
                     if (resolve)
                         resolve(data);
                 } catch (ex: any) {
-                    if (ex && ex.name === "AbortError") {
-                        setQuery(undefined);
-                    }
+                    setQuery(undefined);
                 }
             });
             (promise as PromiseWithCancel<any>).cancel = () => controller.abort();
