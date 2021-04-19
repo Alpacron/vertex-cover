@@ -1,8 +1,6 @@
 from graph import Graph
 from fastapi import FastAPI
-from fastapi.encoders import jsonable_encoder
 from starlette.middleware.cors import CORSMiddleware
-import json
 from pydantic import BaseModel
 from typing import Any
 
@@ -32,14 +30,21 @@ class UpdateItem(BaseModel):
 
 
 @app.put("/connect-sub")
-def connect(g: UpdateItem):
+def connect_sub(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.connect_two_sub_graphs()
+    return graph
+
+
+@app.put("/connect-all-sub")
+def connect_all_sub(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_sub_graphs()
     return graph
 
 
 @app.put("/connect-random")
-def connect(g: UpdateItem):
+def connect_random(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_random_vertices()
     return graph
@@ -52,7 +57,7 @@ class CoverItem(BaseModel):
 
 
 @app.post("/vertex-cover")
-def connect(c: CoverItem):
+def vertex_cover(c: CoverItem):
     graph = Graph(c.graph)
     print(c.k)
     return {"vertices": graph.vertex_cover_brute(c.k, c.depth)[0]}
