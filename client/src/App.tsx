@@ -254,10 +254,10 @@ export default function () {
                     >
                         <ButtonGroup style={{marginLeft: "1em"}}>
                             <Button
-                                onClick={() => putGraphResponse('/increase-pendants')}
+                                onClick={() => putGraphResponse('/decrease-pendants')}
                             >-</Button>
                             <Button
-                                onClick={() => putGraphResponse('/decrease-pendants')}
+                                onClick={() => putGraphResponse('/increase-pendants')}
                             >+</Button>
                         </ButtonGroup>
                     </FormGroup>
@@ -267,10 +267,10 @@ export default function () {
                     >
                         <ButtonGroup style={{marginLeft: "1em"}}>
                             <Button
-                                onClick={() => putGraphResponse('/increase-tops')}
+                                onClick={() => putGraphResponse('/decrease-tops')}
                             >-</Button>
                             <Button
-                                onClick={() => putGraphResponse('/decrease-tops')}
+                                onClick={() => putGraphResponse('/increase-tops')}
                             >+</Button>
                         </ButtonGroup>
                     </FormGroup>

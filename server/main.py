@@ -39,7 +39,7 @@ def connect_sub(g: UpdateItem):
 @app.put("/connect-all-sub")
 def connect_all_sub(g: UpdateItem):
     graph = Graph(g.graph)
-    graph.connect_two_sub_graphs()
+    graph.connect_all_sub_graphs()
     return graph
 
 
@@ -66,26 +66,26 @@ def vertex_cover(c: CoverItem):
 @app.put("/increase-pendants")
 def increase_pendants(g: UpdateItem):
     graph = Graph(g.graph)
-    graph.pendant_vertices(True)
+    graph.increase_pendant_vertices()
     return graph
 
 
 @app.put("/decrease-pendants")
 def decrease_pendants(g: UpdateItem):
     graph = Graph(g.graph)
-    graph.pendant_vertices(False)
+    graph.decrease_pendant_vertices()
     return graph
 
 
 @app.put("/increase-tops")
 def increase_pendants(g: UpdateItem):
     graph = Graph(g.graph)
-    graph.tops_vertices(True)
+    graph.increase_tops_vertices()
     return graph
 
 
 @app.put("/decrease-tops")
 def decrease_pendants(g: UpdateItem):
     graph = Graph(g.graph)
-    graph.tops_vertices(False)
+    graph.decrease_tops_vertices()
     return graph
