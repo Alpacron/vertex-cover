@@ -18,7 +18,7 @@ export default function (graph: any, depth: number, cover: number[], kernel: { i
     let covered: { source: number, target: number }[] = [];
     if (cover.length > 0) {
         cover.forEach(c => covered = getCover(graph, c, depth, 0, covered));
-    } else if (kernel.isolated.length > 0 || kernel.pendant.length > 0) {
+    } else if (kernel.pendant.length > 0 || kernel.tops.length > 0) {
         kernel.pendant.forEach(p => covered = getCover(graph, p, 1, 0, covered))
         kernel.tops.forEach(t => covered = getCover(graph, t, 1, 0, covered))
     }
