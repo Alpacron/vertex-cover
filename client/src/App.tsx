@@ -26,6 +26,7 @@ export default function () {
     const [query, setQuery] = React.useState<PromiseWithCancel<any> | undefined>();
     const [data, setData] = useState<{ graph: {} }>({graph: {}});
     const [coverVertices, setCoverVertices] = useState<number[]>([]);
+    const [kernelVertices, setKernelVertices] = useState<{isolated: number[], pendant: number[], tops: number[]}>({isolated: [], pendant: [], tops: []});
 
     const [generateOpen, setGenerateOpen] = useState(true);
     const [vertices, setVertices] = useState<number>(2);
@@ -60,15 +61,17 @@ export default function () {
         name: string
     }
 
-    function doFetch(url: string, method: string, body: string, resolve?: (res: any) => void, name?: string) {
+    function doFetch(path: string, method: string, body: any, resolve?: (res: any) => void, name?: string) {
         if (!query) {
+            setCoverVertices([]);
+            setKernelVertices({isolated: [], pendant: [], tops: []});
             const controller = new AbortController();
             const signal = controller.signal;
             const promise = new Promise(async () => {
                 try {
-                    const response = await fetch(url, {
+                    const response = await fetch(server + path, {
                         method: method,
-                        body: body,
+                        body: JSON.stringify(body),
                         signal
                     });
                     const data = await response.json();
@@ -90,41 +93,42 @@ export default function () {
     }
 
     const generateGraph = () => {
-        doFetch(server + '/generate', "POST", JSON.stringify({
+        doFetch('/generate', "POST", {
             "vertices": vertices,
             "probability": probability
-        }), res => {
-            setCoverVertices([]);
+        }, res => {
             setData(res);
         }, "generate graph");
     }
 
     const getVertexCover = () => {
-        doFetch(server + '/vertex-cover', "POST", JSON.stringify({
+        doFetch('/vertex-cover', "POST", {
             graph: data.graph,
             depth: coverDepth,
             k: coverK
-        }), res => setCoverVertices(res.vertices), "Vertex cover search");
+        }, setCoverVertices, "Vertex cover search");
     }
 
-    const updateTops = (url: string) => {
-        doFetch(server + url, "PUT", JSON.stringify({
+    const getKernelization = () => {
+        doFetch('/kernelization', "POST", {
             graph: data.graph,
             k: vertexDegree
-        }), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, url.substring(1).replace("-", " "));
+        }, setKernelVertices, "Kernelization");
     }
 
-    const putGraphResponse = (url: string) => {
-        doFetch(server + url, "PUT", JSON.stringify(data), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, url.substring(1).replace("-", " "));
+    const updateTops = (path: string) => {
+        doFetch(path, "PUT", {
+            graph: data.graph,
+            k: vertexDegree
+        }, setData, path.substring(1).replace("-", " "));
+    }
+
+    const putGraphResponse = (path: string) => {
+        doFetch(path, "PUT", data, setData, path.substring(1).replace("-", " "));
     }
 
     const onClickNode = function (nodeId: string) {
+        setKernelVertices({isolated: [], pendant: [], tops: []});
         let c = Object.assign([], coverVertices);
         if (c.indexOf(+nodeId, 0) > -1)
             c.splice(coverVertices.indexOf(+nodeId, 0), 1);
@@ -285,7 +289,7 @@ export default function () {
                                 onClick={() => setKernelizationOpen(!kernelizationOpen)}/>
                     </H6>
                     <Collapse isOpen={kernelizationOpen} keepChildrenMounted>
-                        <H6 style={{color: "#4487d9"}}>Pendants</H6>
+                        <H6 style={{color: "#137CBD"}}>Pendants</H6>
                         <FormGroup
                             style={{display: "flex", flexDirection: "row", alignItems: "center"}}
                             label="Number of pendants"
@@ -299,7 +303,7 @@ export default function () {
                                 >+</Button>
                             </ButtonGroup>
                         </FormGroup>
-                        <H6 style={{color: "#4487d9"}}>Tops</H6>
+                        <H6 style={{color: "#137CBD"}}>Tops</H6>
                         <FormGroup
                             label="Vertex degree"
                             labelFor="tops"
@@ -325,7 +329,12 @@ export default function () {
                                 >+</Button>
                             </ButtonGroup>
                         </FormGroup>
-                        <H6 style={{color: "#4487d9"}}>Kernelization</H6>
+                        <H6 style={{color: "#137CBD"}}>Kernelization</H6>
+                        <ButtonGroup style={{marginBottom: "15px"}}>
+                            <Button
+                                onClick={getKernelization}
+                            >Perform kernelization</Button>
+                        </ButtonGroup>
                     </Collapse>
                 </div>
             </Card>
@@ -333,7 +342,7 @@ export default function () {
                 <Graph
                     id="graph-id"
                     ref={graphRef}
-                    data={convertToD3Graph(data.graph, coverDepth !== undefined ? coverDepth : 1, coverVertices)}
+                    data={convertToD3Graph(data.graph, coverDepth !== undefined ? coverDepth : 1, coverVertices, kernelVertices)}
                     onClickNode={onClickNode}
                     config={{
                         staticGraph: false,

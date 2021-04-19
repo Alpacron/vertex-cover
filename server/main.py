@@ -59,8 +59,7 @@ class CoverItem(BaseModel):
 @app.post("/vertex-cover")
 def vertex_cover(c: CoverItem):
     graph = Graph(c.graph)
-    print(c.k)
-    return {"vertices": graph.vertex_cover_brute(c.k, c.depth)[0]}
+    return graph.vertex_cover_brute(c.k, c.depth)[0]
 
 
 @app.put("/increase-pendants")
@@ -94,3 +93,9 @@ def decrease_tops(g: TopsItem):
     graph = Graph(g.graph)
     graph.decrease_tops_vertices(g.k)
     return graph
+
+
+@app.post("/kernelization")
+def kernelization(g: TopsItem):
+    graph = Graph(g.graph)
+    return graph.perform_kernelization(g.k)

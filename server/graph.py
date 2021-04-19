@@ -265,3 +265,9 @@ class Graph:
             if len(self.graph[str(v)]) > k:
                 vertex = v
         return vertex
+
+    def perform_kernelization(self, k: int):
+        isolated = [v for v in self.vertices() if self.is_isolated(v)]
+        pendant = [v for v in self.vertices() if self.is_pendant(v)]
+        tops = [v for v in self.vertices() if self.is_tops(v, k)]
+        return {"isolated": isolated, "pendant": pendant, "tops": tops}
