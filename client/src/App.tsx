@@ -128,13 +128,14 @@ export default function () {
     }
 
     const onClickNode = function (nodeId: string) {
-        setKernelVertices({isolated: [], pendant: [], tops: []});
-        let c = Object.assign([], coverVertices);
-        if (c.indexOf(+nodeId, 0) > -1)
-            c.splice(coverVertices.indexOf(+nodeId, 0), 1);
-        else
-            c.push(+nodeId);
-        setCoverVertices(c);
+        if(kernelVertices.isolated.length == 0 && kernelVertices.pendant.length == 0 && kernelVertices.tops.length == 0) {
+            let c = Object.assign([], coverVertices);
+            if (c.indexOf(+nodeId, 0) > -1)
+                c.splice(coverVertices.indexOf(+nodeId, 0), 1);
+            else
+                c.push(+nodeId);
+            setCoverVertices(c);
+        }
     };
 
     function centerNodes() {
