@@ -68,20 +68,7 @@ export default function () {
             setQuery((promise as PromiseWithCancel<any>));
         }
     }
-
-    const connectSubGraphs = () => {
-        doFetch(server + '/connect-sub', "PUT", JSON.stringify(data), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, "connect sub graph");
-    }
-
-    const connectVertices = () => {
-        doFetch(server + '/connect-random', "PUT", JSON.stringify(data), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, "connect vertices");
-    }
+    // }
 
     const generateGraph = () => {
         doFetch(server + '/generate', "POST", JSON.stringify({
@@ -102,32 +89,11 @@ export default function () {
         }), res => setCoverVertices(res.vertices), "Vertex cover search");
     }
 
-    const decreasePendants = () => {
-        doFetch(server + '/decrease-pendants', "PUT", JSON.stringify(data), res => {
+    const putGraphResponse = (url: string) => {
+        doFetch(server + url, "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
             setData(res);
-        }, "decrease pendants");
-    }
-
-    const increasePendants = () => {
-        doFetch(server + '/increase-pendants', "PUT", JSON.stringify(data), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, "increase pendants");
-    }
-
-    const decreaseTops = () => {
-        doFetch(server + '/decrease-tops', "PUT", JSON.stringify(data), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, "decrease tops");
-    }
-
-    const increaseTops = () => {
-        doFetch(server + '/increase-tops', "PUT", JSON.stringify(data), res => {
-            setCoverVertices([]);
-            setData(res);
-        }, "increase tops");
+        }, url.substring(1).replace("-", " "));
     }
 
     const onClickNode = function (nodeId: string) {
@@ -217,14 +183,20 @@ export default function () {
                     <FormGroup>
                         <Button
                             title="Connect two random disconnected sub graphs"
-                            onClick={connectSubGraphs}
+                            onClick={() => putGraphResponse('/connect-sub')}
                         >Connect sub graphs</Button>
                     </FormGroup>
                     <FormGroup>
                         <Button
                             title="Connect two random disconnected vertices"
-                            onClick={connectVertices}
+                            onClick={() => putGraphResponse('/connect-random')}
                         >Connect vertices</Button>
+                    </FormGroup>
+                    <FormGroup>
+                        <Button
+                            title="Connect all sub graphs"
+                            onClick={() => putGraphResponse('/connect-all-sub')}
+                        >Connect all sub graphs</Button>
                     </FormGroup>
                 </div>
                 <div style={{
@@ -282,10 +254,10 @@ export default function () {
                     >
                         <ButtonGroup style={{marginLeft: "1em"}}>
                             <Button
-                                onClick={decreasePendants}
+                                onClick={() => putGraphResponse('/increase-pendants')}
                             >-</Button>
                             <Button
-                                onClick={increasePendants}
+                                onClick={() => putGraphResponse('/decrease-pendants')}
                             >+</Button>
                         </ButtonGroup>
                     </FormGroup>
@@ -295,10 +267,10 @@ export default function () {
                     >
                         <ButtonGroup style={{marginLeft: "1em"}}>
                             <Button
-                                onClick={decreaseTops}
+                                onClick={() => putGraphResponse('/increase-tops')}
                             >-</Button>
                             <Button
-                                onClick={increaseTops}
+                                onClick={() => putGraphResponse('/decrease-tops')}
                             >+</Button>
                         </ButtonGroup>
                     </FormGroup>
