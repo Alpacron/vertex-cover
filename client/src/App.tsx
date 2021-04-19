@@ -20,23 +20,25 @@ FocusStyleManager.onlyShowFocusOnTabs();
 
 export default function () {
     const server = process.env.REACT_APP_SERVER_URL;
-    const [vertices, setVertices] = useState<number>(2);
-    const [vertexDegree, setVertexDegree] = useState<number>(1);
-    const [probability, setProbability] = useState<number>(0.5);
-    const [data, setData] = useState<{ graph: {} }>({graph: {}});
-    const [coverVertices, setCoverVertices] = useState<number[]>([]);
-    const [coverK, setCoverK] = useState<number>(-1);
-    const [coverDepth, setCoverDepth] = useState<number>(1);
-    const [query, setQuery] = React.useState<PromiseWithCancel<any> | undefined>();
-    const {width, height} = useWindowDimensions();
     const graphBoundingRef = useRef<HTMLDivElement>(null);
     const graphRef = useRef<Graph<any, any>>(null);
+    const {width, height} = useWindowDimensions();
+    const [query, setQuery] = React.useState<PromiseWithCancel<any> | undefined>();
+    const [data, setData] = useState<{ graph: {} }>({graph: {}});
+    const [coverVertices, setCoverVertices] = useState<number[]>([]);
 
     const [generateOpen, setGenerateOpen] = useState(true);
+    const [vertices, setVertices] = useState<number>(2);
+    const [probability, setProbability] = useState<number>(0.5);
+
     const [connectionOpen, setConnectionOpen] = useState(false);
+
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
-    const [pendantsOpen, setPendantsOpen] = useState(false);
-    const [topsOpen, setTopsOpen] = useState(false);
+    const [coverK, setCoverK] = useState<number>(-1);
+    const [coverDepth, setCoverDepth] = useState<number>(1);
+
+    const [kernelizationOpen, setKernelizationOpen] = useState(false);
+    const [vertexDegree, setVertexDegree] = useState<number>(0);
 
     useEffect(() => {
         centerNodes();
@@ -105,6 +107,16 @@ export default function () {
         }), res => setCoverVertices(res.vertices), "Vertex cover search");
     }
 
+    const updateTops = (url: string) => {
+        doFetch(server + url, "PUT", JSON.stringify({
+            graph: data.graph,
+            k: vertexDegree
+        }), res => {
+            setCoverVertices([]);
+            setData(res);
+        }, url.substring(1).replace("-", " "));
+    }
+
     const putGraphResponse = (url: string) => {
         doFetch(server + url, "PUT", JSON.stringify(data), res => {
             setCoverVertices([]);
@@ -156,7 +168,7 @@ export default function () {
             </Popup>
             <Card style={{display: "flex", flexDirection: "column", overflowY: "scroll", minWidth: "264px"}}>
                 <div style={{display: "flex", flexDirection: "column"}}>
-                    <H6>Directed Graph
+                    <H6>Undirected graph
                         <Button minimal small icon={generateOpen ? "chevron-up" : "chevron-down"}
                                 onClick={() => setGenerateOpen(!generateOpen)}/>
                     </H6>
@@ -206,19 +218,19 @@ export default function () {
                             <Button
                                 title="Connect two random disconnected vertices"
                                 onClick={() => putGraphResponse('/connect-random')}
-                            >Random vertices</Button>
+                            >Connect random vertices</Button>
                         </FormGroup>
                         <FormGroup>
                             <Button
                                 title="Connect two random disconnected sub graphs"
                                 onClick={() => putGraphResponse('/connect-sub')}
-                            >Two sub graphs</Button>
+                            >Connect two sub graphs</Button>
                         </FormGroup>
                         <FormGroup style={{marginBottom: "15px"}}>
                             <Button
                                 title="Connect all disconnected sub graphs"
                                 onClick={() => putGraphResponse('/connect-all-sub')}
-                            >All sub graphs</Button>
+                            >Connect all sub graphs</Button>
                         </FormGroup>
                     </Collapse>
                 </div>
@@ -268,11 +280,12 @@ export default function () {
                     display: "flex",
                     flexDirection: "column"
                 }}>
-                    <H6>Pendants
-                        <Button minimal small icon={pendantsOpen ? "chevron-up" : "chevron-down"}
-                                onClick={() => setPendantsOpen(!pendantsOpen)}/>
+                    <H6>Kernelization
+                        <Button minimal small icon={kernelizationOpen ? "chevron-up" : "chevron-down"}
+                                onClick={() => setKernelizationOpen(!kernelizationOpen)}/>
                     </H6>
-                    <Collapse isOpen={pendantsOpen} keepChildrenMounted>
+                    <Collapse isOpen={kernelizationOpen} keepChildrenMounted>
+                        <H6 style={{color: "#4487d9"}}>Pendants</H6>
                         <FormGroup
                             style={{display: "flex", flexDirection: "row", alignItems: "center"}}
                             label="Number of pendants"
@@ -286,20 +299,11 @@ export default function () {
                                 >+</Button>
                             </ButtonGroup>
                         </FormGroup>
-                    </Collapse>
-                </div>
-                <div style={{
-                    display: "flex",
-                    flexDirection: "column"
-                }}>
-                    <H6>Tops
-                        <Button minimal small icon={topsOpen ? "chevron-up" : "chevron-down"}
-                                onClick={() => setTopsOpen(!topsOpen)}/>
-                    </H6>
-                    <Collapse isOpen={topsOpen} keepChildrenMounted>
+                        <H6 style={{color: "#4487d9"}}>Tops</H6>
                         <FormGroup
                             label="Vertex degree"
                             labelFor="tops"
+                            labelInfo="(k)"
                         >
                             <NumericInput
                                 min={0}
@@ -314,13 +318,14 @@ export default function () {
                         >
                             <ButtonGroup style={{marginLeft: "1em"}}>
                                 <Button
-                                    onClick={() => putGraphResponse('/decrease-tops')}
+                                    onClick={() => updateTops('/decrease-tops')}
                                 >-</Button>
                                 <Button
-                                    onClick={() => putGraphResponse('/increase-tops')}
+                                    onClick={() => updateTops('/increase-tops')}
                                 >+</Button>
                             </ButtonGroup>
                         </FormGroup>
+                        <H6 style={{color: "#4487d9"}}>Kernelization</H6>
                     </Collapse>
                 </div>
             </Card>

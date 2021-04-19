@@ -77,15 +77,20 @@ def decrease_pendants(g: UpdateItem):
     return graph
 
 
+class TopsItem(BaseModel):
+    graph: Any
+    k: int
+
+
 @app.put("/increase-tops")
-def increase_pendants(g: UpdateItem):
+def increase_tops(g: TopsItem):
     graph = Graph(g.graph)
-    graph.increase_tops_vertices()
+    graph.increase_tops_vertices(g.k)
     return graph
 
 
 @app.put("/decrease-tops")
-def decrease_pendants(g: UpdateItem):
+def decrease_tops(g: TopsItem):
     graph = Graph(g.graph)
-    graph.decrease_tops_vertices()
+    graph.decrease_tops_vertices(g.k)
     return graph
