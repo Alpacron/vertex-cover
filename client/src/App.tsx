@@ -179,24 +179,24 @@ export default function () {
                     alignItems: "center",
                     marginLeft: "2em"
                 }}>
-                    <H6>Connected</H6>
-                    <FormGroup>
-                        <Button
-                            title="Connect two random disconnected sub graphs"
-                            onClick={() => putGraphResponse('/connect-sub')}
-                        >Connect sub graphs</Button>
-                    </FormGroup>
+                    <H6>Connection</H6>
                     <FormGroup>
                         <Button
                             title="Connect two random disconnected vertices"
                             onClick={() => putGraphResponse('/connect-random')}
-                        >Connect vertices</Button>
+                        >Random vertices</Button>
+                    </FormGroup>
+                    <FormGroup>
+                        <Button
+                            title="Connect two random disconnected sub graphs"
+                            onClick={() => putGraphResponse('/connect-sub')}
+                        >Two sub graphs</Button>
                     </FormGroup>
                     <FormGroup>
                         <Button
                             title="Connect all sub graphs"
                             onClick={() => putGraphResponse('/connect-all-sub')}
-                        >Connect all sub graphs</Button>
+                        >All sub graphs</Button>
                     </FormGroup>
                 </div>
                 <div style={{

@@ -26,22 +26,16 @@ class Graph:
         e = [False, True]
         probability = [1 - p, p]
 
-        visited = []
-
         for v in self.graph:
             for u in self.graph:
-                if v is not u and not self.is_connected(u, v):
-                    if (v, u) not in visited and (u, v) not in visited:
-                        visited.append((v, u))
-
-                        if random.choices(e, probability)[0]:
-                            self.add_edge(u, v)
+                if u > v and not self.is_connected(u, v) and random.choices(e, probability)[0]:
+                    self.add_edge(u, v)
 
     def vertices(self):
         """
         Returns a list of all vertices in the graph.
         """
-        return [int(i) for i in list(self.graph.keys())]
+        return [int(i) for i in self.graph]
 
     def edges(self):
         """
