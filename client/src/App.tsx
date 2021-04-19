@@ -194,7 +194,7 @@ export default function () {
                     </FormGroup>
                     <FormGroup>
                         <Button
-                            title="Connect all sub graphs"
+                            title="Connect all disconnected sub graphs"
                             onClick={() => putGraphResponse('/connect-all-sub')}
                         >All sub graphs</Button>
                     </FormGroup>
