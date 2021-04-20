@@ -20,7 +20,6 @@
 }
 
 .container__graph-area {
-    max-height: 1000px;
     border: 1px dotted gray;
     z-index: 1;
     overflow: hidden;

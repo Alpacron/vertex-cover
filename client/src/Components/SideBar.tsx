@@ -233,14 +233,14 @@ export default function (props: {
                                 onClick={() => {getVertexCover('/vertex-cover')}}
                             >Brute force search</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : "Brute force has not been run yet."}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : "Brute force has not been run yet."}</p>
                         <H6 style={{color: "#137CBD"}}>Brute force vertex cover with kernelization</H6>
                         <ButtonGroup>
                             <Button
                                 onClick={() => {getVertexCover('/vertex-cover-kernelized')}}
                             >Brute force search with kernelization</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverKernelizedTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverKernelizedTime + " seconds" : "Brute force with kernelization has not been run yet."}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverKernelizedTime > 0? "Vertex cover took: " + vertexCoverKernelizedTime + " seconds" : "Brute force with kernelization has not been run yet."}</p>
                     </Collapse>
                 </div>
                 <div style={{
