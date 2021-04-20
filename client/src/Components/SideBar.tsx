@@ -12,8 +12,9 @@ export default function (props: {
 }) {
     const server = process.env.REACT_APP_SERVER_URL;
     const {width} = useWindowDimensions();
-    const [query, setQuery] = React.useState<PromiseWithCancel<any> | undefined>();
+    const [query, setQuery] = useState<PromiseWithCancel<any> | undefined>();
 
+    const [vertexCoverTime, setVertexCoverTime] = useState<number>(0)
     const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
@@ -55,7 +56,7 @@ export default function (props: {
                     const data = await response.json();
                     setQuery(undefined);
                     if (resolve)
-                        resolve(data);
+                        resolve({data: data, query: (promise as PromiseWithCancel<any>)});
                 } catch (ex: any) {
                     setQuery(undefined);
                 }
@@ -65,6 +66,7 @@ export default function (props: {
             if (name)
                 (promise as PromiseWithCancel<any>).name = name;
             setQuery((promise as PromiseWithCancel<any>));
+            return (promise as PromiseWithCancel<any>);
         }
     }
 
@@ -72,7 +74,9 @@ export default function (props: {
         doFetch('/generate', "POST", {
             "vertices": vertices,
             "probability": probability
-        }, props.setData, "generate graph");
+        }, res => {
+            props.setData(res.data);
+        }, "generate graph");
     }
 
     const getVertexCover = () => {
@@ -80,21 +84,28 @@ export default function (props: {
             graph: props.data,
             depth: coverDepth,
             k: coverK
-        }, res => {props.setCover({depth: coverDepth, vertices: res})}, "Vertex cover search");
+        }, res => {
+            props.setCover({depth: coverDepth, vertices: res.data})
+            setVertexCoverTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
+        }, "vertex cover search");
     }
 
     const getKernelization = (graph?: {}) => {
         doFetch('/kernelization', "POST", {
             graph: graph != undefined ? graph : props.data,
             k: vertexDegree
-        }, props.setKernel, "Kernelization");
+        }, res => {
+            props.setKernel(res.data);
+        }, "kernelization");
     }
 
     const putGraphResponse = (path: string) => {
         doFetch(path, "PUT", {
             graph: props.data,
             k: vertexDegree
-        }, props.setData, path.substring(1).replace("-", " "));
+        }, res => {
+            props.setData(res.data);
+        }, path.substring(1).replace("-", " "));
     }
 
     return (
@@ -212,11 +223,12 @@ export default function (props: {
                                 onValueChange={setCoverDepth}
                             />
                         </FormGroup>
-                        <ButtonGroup style={{marginBottom: "15px"}}>
+                        <ButtonGroup>
                             <Button
                                 onClick={getVertexCover}
                             >Brute force search</Button>
                         </ButtonGroup>
+                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : ""}</p>
                     </Collapse>
                 </div>
                 <div style={{
