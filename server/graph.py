@@ -184,7 +184,6 @@ class Graph:
 
         # If current has less vertices than result and contains all edges, return
         if k == -1 and len(current_covered) == len(edges) and (best == [] or len(current) < len(best)):
-            print(current, current_covered)
             return current, current_covered
 
         # If k is equal to current and current covers more edges than best, return
@@ -232,7 +231,6 @@ class Graph:
 
         # If current has less vertices than result and contains all edges, return
         if k == -1 and len(current_covered) == len(edges) and (best == [] or len(current) < len(best)):
-            print(current, current_covered)
             return current, current_covered
 
         # If k is equal to current and current covers more edges than best, return
