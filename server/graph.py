@@ -159,10 +159,12 @@ class Graph:
         """
         Find minimum required vertices that cover all edges.
         """
+
         if edges is None:
             edges = self.edges()
         if vertices is None:
-            vertices = self.vertices()
+            # Since we don't want to consider vertices without edges
+            vertices = [v for v in self.vertices() if not self.is_isolated(v)]
         if result is None:
             result = []
         if covered is None:
@@ -247,14 +249,17 @@ class Graph:
             while self.is_tops(v, k) and len(self.graph[str(v)]) > 0:
                 self.remove_random_edge(v)
 
+    def degree(self, vertex: int):
+        return len(self.graph[str(vertex)])
+
     def is_isolated(self, vertex: int):
-        return len(self.graph[str(vertex)]) == 0
+        return self.degree(vertex) == 0
 
     def is_pendant(self, vertex: int):
-        return len(self.graph[str(vertex)]) == 1
+        return self.degree(vertex) == 1
 
-    def is_tops(self, v: int, k: int):
-        return len(self.graph[str(v)]) > k
+    def is_tops(self, vertex: int, k: int):
+        return self.degree(vertex) > k
 
     def highest_degree_vertex(self, vertices: [int] = None):
         if vertices is None:
