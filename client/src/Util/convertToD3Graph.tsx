@@ -12,16 +12,29 @@ function getCover(graph: any, vertex: number, depth: number, currentDepth: numbe
     return covered
 }
 
-export default function (graph: any, depth: number, cover: number[]): GraphData<any, any> {
+export default function (graph: any, depth: number, cover: number[], kernel: { isolated: number[], pendant: number[], tops: number[] }): GraphData<any, any> {
     let nodes: { id: number, color: string }[] = [];
     let links: { source: number, target: number, color: string }[] = [];
     let covered: { source: number, target: number }[] = [];
     if (cover.length > 0) {
         cover.forEach(c => covered = getCover(graph, c, depth, 0, covered));
+    } else if (kernel.pendant.length > 0 || kernel.tops.length > 0) {
+        kernel.pendant.forEach(p => covered = getCover(graph, p, 1, 0, covered))
+        kernel.tops.forEach(t => covered = getCover(graph, t, 1, 0, covered))
     }
 
     Object.keys(graph).forEach(v => {
-        nodes.push({id: +v, color: cover.includes(+v) ? "#3f51b5" : "#d3d3d3"});
+        let color = "#d3d3d3";
+        if (cover.includes(+v))
+            color = "#3f51b5";
+        else if (kernel.isolated.includes(+v))
+            color = "#D13913";
+        else if (kernel.pendant.includes(+v))
+            color = "#0D8050";
+        else if (kernel.tops.includes(+v))
+            color = "#137CBD";
+
+        nodes.push({id: +v, color: color});
 
         graph[v].forEach((l: number) => {
             // if link hasn't been added yet
@@ -29,7 +42,7 @@ export default function (graph: any, depth: number, cover: number[]): GraphData<
                 // check if it is covered
                 let isCovered = covered.filter(c => (c.source === +v && c.target === l) || (c.source === l && c.target === +v)).length > 0;
                 // add link to links
-                links.push({source: +v, target: l, color: isCovered ? "goldenrod" : "#d3d3d3"});
+                links.push({source: +v, target: l, color: isCovered ? "#D99E0B" : "#d3d3d3"});
             }
         });
     });

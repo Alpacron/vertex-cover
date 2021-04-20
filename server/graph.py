@@ -26,22 +26,16 @@ class Graph:
         e = [False, True]
         probability = [1 - p, p]
 
-        visited = []
-
-        for v in self.graph:
-            for u in self.graph:
-                if v is not u and not self.is_connected(u, v):
-                    if (v, u) not in visited and (u, v) not in visited:
-                        visited.append((v, u))
-
-                        if random.choices(e, probability)[0]:
-                            self.add_edge(u, v)
+        for v in self.vertices():
+            for u in self.vertices():
+                if u > v and not self.is_connected(u, v) and random.choices(e, probability)[0]:
+                    self.add_edge(u, v)
 
     def vertices(self):
         """
         Returns a list of all vertices in the graph.
         """
-        return [int(i) for i in list(self.graph.keys())]
+        return [int(i) for i in self.graph]
 
     def edges(self):
         """
@@ -54,36 +48,38 @@ class Graph:
                     edges += [(int(vertex), int(neighbour))]
         return edges
 
-    def add_vertex(self, u):
+    def add_vertex(self, u: int):
         """
         Add a vertex to the graph.
         """
-        items = [int(i[0]) for i in list(self.graph.items())]
-        if int(u) not in items:
+        if u not in self.vertices():
             self.graph[str(u)] = []
 
-    def add_edge(self, u, v):
+    def add_edge(self, u: int, v: int):
         """
         Add an edge to the graph.
         """
-        if u not in self.graph:
-            self.add_vertex(int(u))
+        assert u in self.vertices() and v in self.vertices()
 
-        if v not in self.graph:
-            self.add_vertex(int(v))
+        self.graph[str(u)].append(v)
+        self.graph[str(v)].append(u)
 
-        self.graph[str(u)].append(int(v))
-        self.graph[str(v)].append(int(u))
+    def remove_edge(self, u: int, v: int):
+        """
+        Remove an edge from the graph.
+        """
+        assert u in self.vertices() and v in self.vertices()
 
-    def is_connected(self, u, v):
+        self.graph[str(u)].remove(v)
+        self.graph[str(v)].remove(u)
+
+    def is_connected(self, u: int, v: int):
         """
         Check if two vertices are connected.
         """
-        items = [int(i[0]) for i in list(self.graph.items())]
-        if int(u) not in items or int(v) not in items:
-            return False
+        assert u in self.vertices() and v in self.vertices()
 
-        if int(v) not in self.graph[str(u)]:
+        if v not in self.graph[str(u)]:
             return False
 
         return True
@@ -92,40 +88,74 @@ class Graph:
         """
         Randomly connect two vertices.
         """
-        items = [i[0] for i in list(self.graph.items()) if len(self.graph[str(i[0])]) < len(self.vertices()) - 1]
-        if len(items) > 0:
-            v1 = random.choice(items)
-            items = [i for i in items if int(i) not in [int(v1)] + self.graph[str(v1)]]
+        vertices = [v for v in self.vertices() if len(self.graph[str(v)]) < len(self.vertices()) - 1]
+        if len(vertices) > 0:
+            v1 = random.choice(vertices)
+            items = [v for v in vertices if v not in [v1] + self.graph[str(v1)]]
             if len(items) > 0:
                 v2 = random.choice(items)
 
                 if not self.is_connected(v1, v2):
                     self.add_edge(v1, v2)
 
-    def find_sub_graph(self, v, sub):
+    def connect_vertex_to_random(self, v: int):
+        assert v in self.vertices()
+
+        vertices = [u for u in self.vertices() if
+                    len(self.graph[str(u)]) < len(self.vertices()) - 1 and u not in [v] + self.graph[str(v)]]
+        if len(vertices) > 0:
+            v2 = random.choice(vertices)
+            not_connected = [u for u in vertices if len(self.graph[str(u)]) == 0]
+            if len(not_connected) > 0:
+                v2 = random.choice(not_connected)
+            if not self.is_connected(v, v2):
+                self.add_edge(v, v2)
+
+    def remove_random_edge(self, v: int):
+        vertices = [u for u in self.vertices() if u in self.graph[str(v)]]
+        if len(vertices) > 0:
+            self.remove_edge(v, random.choice(vertices))
+
+    def find_sub_graph(self, vertex: int, sub_graph: [int]):
         """
         Find subgraph connected to vertex.
         """
-        for i in self.graph[str(v)]:
-            if i not in sub:
-                sub = self.find_sub_graph(i, sub + [i])
-        return sub
+        for i in self.graph[str(vertex)]:
+            if i not in sub_graph:
+                sub_graph = self.find_sub_graph(i, sub_graph + [i])
+        return sub_graph
+
+    def connect_all_sub_graphs(self):
+        """
+        Find all disconnected sub graphs, select a random vertex in each of them and add an edge between
+        those two vertices.
+        """
+        vertex = random.choice(self.vertices())
+        while True:
+            sub = self.find_sub_graph(vertex, [vertex])
+            if len(sub) == len(self.vertices()):
+                break
+            for v in self.vertices():
+                if v not in sub:
+                    self.add_edge(random.choice(sub), v)
+                    break
 
     def connect_two_sub_graphs(self):
         """
         Find two disconnected sub graphs, select a random vertex in each of them and add an edge between
         those two vertices.
         """
-        items = [int(i[0]) for i in list(self.graph.items())]
-        random.shuffle(items)
-        sub = self.find_sub_graph(items[0], [items[0]])
-        for i in items:
-            if i not in sub:
-                self.add_edge(random.choice(sub), i)
+        vertices = self.vertices()
+        vertex = random.choice(vertices)
+        sub = self.find_sub_graph(vertex, [vertex])
+        for v in vertices:
+            if v not in sub:
+                self.add_edge(random.choice(sub), v)
                 break
 
-    def vertex_cover_brute(self, k, depth=1, result=None, current=None, covered=None, highest_covered=0, edges=None,
-                           vertices=None):
+    def vertex_cover_brute(self, k: int, depth: int = 1, result: [int] = None, current: [int] = None,
+                           covered: [int] = None, highest_covered: int = 0, edges: (int, int) = None,
+                           vertices: [int] = None):
         """
         Find minimum required vertices that cover all edges.
         """
@@ -158,21 +188,86 @@ class Graph:
 
         # Recursively do this for all vertices (randomly), until a solution is found.
         if (k == -1 and (len(current) < len(result) or result == []) and not contains_all_edges) or len(current) < k:
-            ver = [e for e in vertices if e not in current]
+            ver = [u for u in vertices if u not in current]
             random.shuffle(ver)
             for v in ver:
-                c = covered + [e for e in self.vertex_edges(v, depth) if not (e in covered or (e[1], e[0]) in covered)]
+                c = covered + [e for e in self.vertex_degree(v, depth) if
+                               not (e in covered or (e[1], e[0]) in covered)]
                 result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered,
                                                                   edges, vertices)
 
         return result, highest_covered
 
-    def vertex_edges(self, vertex, depth=1, current_depth=0, covered=None):
+    def vertex_degree(self, v: int, depth: int = 1, current_depth: int = 0, covered: [int] = None):
         if covered is None:
             covered = []
 
         if current_depth < depth:
-            for v in [e for e in self.graph[str(vertex)] if not ((vertex, e) in covered or (e, vertex) in covered)]:
-                covered = self.vertex_edges(v, depth, current_depth + 1, covered + [(vertex, v)])
+            for u in [e for e in self.graph[str(v)] if not ((v, e) in covered or (e, v) in covered)]:
+                covered = self.vertex_degree(u, depth, current_depth + 1, covered + [(v, u)])
 
         return covered
+
+    def increase_pendant_vertices(self):
+        non_pendant_vertices = [u for u in self.vertices() if not self.is_pendant(u)]
+        if len(non_pendant_vertices) > 0:
+            v = random.choice(non_pendant_vertices)
+            while not self.is_pendant(v):
+                remaining_non_pendant_vertices = [u for u in self.graph[str(v)] if
+                                                  not self.is_pendant(u) and not u == v]
+                if len(remaining_non_pendant_vertices) > 0:
+                    if len(self.graph[str(v)]) > 1:
+                        self.remove_edge(v, random.choice(remaining_non_pendant_vertices))
+                    else:
+                        self.add_edge(v, random.choice(remaining_non_pendant_vertices))
+                else:
+                    if len(self.graph[str(v)]) > 1:
+                        self.remove_edge(v, random.choice(self.graph[str(v)]))
+                    else:
+                        self.connect_vertex_to_random(v)
+
+    def decrease_pendant_vertices(self):
+        pendant_vertices = [v for v in self.vertices() if self.is_pendant(v)]
+        if len(pendant_vertices) > 0:
+            vertex = random.choice(pendant_vertices)
+            self.remove_edge(vertex, random.choice(self.graph[str(vertex)]))
+
+    def increase_tops_vertices(self, k: int):
+        non_tops_vertices = [v for v in self.vertices() if not self.is_tops(v, k)]
+
+        if len(non_tops_vertices) > 0:
+            v = random.choice(non_tops_vertices)
+            while not self.is_tops(v, k) and len(self.graph[str(v)]) + 1 < len(self.vertices()):
+                self.connect_vertex_to_random(v)
+
+    def decrease_tops_vertices(self, k: int):
+        tops_vertices = [v for v in self.vertices() if self.is_tops(v, k)]
+        if len(tops_vertices) > 0:
+            v = random.choice(tops_vertices)
+            while self.is_tops(v, k) and len(self.graph[str(v)]) > 0:
+                self.remove_random_edge(v)
+
+    def is_isolated(self, vertex: int):
+        return len(self.graph[str(vertex)]) == 0
+
+    def is_pendant(self, vertex: int):
+        return len(self.graph[str(vertex)]) == 1
+
+    def is_tops(self, v: int, k: int):
+        return len(self.graph[str(v)]) > k
+
+    def highest_degree_vertex(self, vertices: [int] = None):
+        if vertices is None:
+            vertices = self.vertices()
+        k = -1
+        vertex = random.choice(vertices)
+        for v in vertices:
+            if len(self.graph[str(v)]) > k:
+                vertex = v
+        return vertex
+
+    def perform_kernelization(self, k: int):
+        isolated = [v for v in self.vertices() if self.is_isolated(v)]
+        pendant = [v for v in self.vertices() if self.is_pendant(v)]
+        tops = [v for v in self.vertices() if self.is_tops(v, k)]
+        return {"isolated": isolated, "pendant": pendant, "tops": tops}
