@@ -153,60 +153,112 @@ class Graph:
                 self.add_edge(random.choice(sub), v)
                 break
 
-    def vertex_cover_brute(self, k: int, depth: int = 1, result: [int] = None, current: [int] = None,
-                           covered: [int] = None, highest_covered: int = 0, edges: (int, int) = None,
-                           vertices: [int] = None):
+    def vertex_cover_brute(self, k: int, depth: int = 1, vertices: [int] = None, edges: [(int, int)] = None,
+                           best: [int] = None, best_covered: [(int, int)] = None,
+                           current: [int] = None, current_covered: [(int, int)] = None):
         """
         Find minimum required vertices that cover all edges.
         """
-
+        # All edges in graph
         if edges is None:
             edges = self.edges()
+        # All vertices in graph
         if vertices is None:
-            # Since we don't want to consider vertices without edges
-            vertices = [v for v in self.vertices() if not self.is_isolated(v)]
-        if result is None:
-            result = []
-        if covered is None:
-            covered = []
+            vertices = self.vertices()
+        # Best case result [vertex]
+        if best is None:
+            best = []
+        # Edges best vertices cover [(vertex, vertex)]
+        if best_covered is None:
+            best_covered = []
+        # Current result in recursion [vertex]
         if current is None:
             current = []
+        # Edges current vertices in recursion cover [(vertex, vertex)]
+        if current_covered is None:
+            current_covered = []
 
-        contains_all_edges = len([e for e in edges if e in covered or (e[1], e[0]) in covered]) == len(edges)
-
+        # If there are more vertices > k, return all vertices
         if k >= len(vertices):
-            return vertices, len(edges)
+            return vertices, edges
 
-        # If current covered contains all edges, set fewest to current and backtrack
-        if k == -1 and contains_all_edges:
-            # If current is bigger than fewest, we backtrack.
-            if len(current) < len(result) or result == []:
-                highest_covered = len(edges)
-                result = current
+        # If current has less vertices than result and contains all edges, return
+        if k == -1 and len(current_covered) == len(edges) and (best == [] or len(current) < len(best)):
+            print(current, current_covered)
+            return current, current_covered
 
-        if k == len(current) and len(covered) > highest_covered:
-            highest_covered = len(covered)
-            result = current
+        # If k is equal to current and current covers more edges than best, return
+        if k == len(current) and len(current_covered) > len(best_covered):
+            return current, current_covered
 
-        # Recursively do this for all vertices (randomly), until a solution is found.
-        if (k == -1 and (len(current) < len(result) or result == []) and not contains_all_edges) or len(current) < k:
-            ver = [u for u in vertices if u not in current]
-            random.shuffle(ver)
-            for v in ver:
-                c = covered + [e for e in self.vertex_degree(v, depth) if
-                               not (e in covered or (e[1], e[0]) in covered)]
-                result, highest_covered = self.vertex_cover_brute(k, depth, result, current + [v], c, highest_covered,
-                                                                  edges, vertices)
+        # Recursively do this for all vertices, until a solution is found.
+        if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
+            # Get all vertices that have not been covered and shuffle them
+            vertices = [u for u in vertices if u not in current]
+            random.shuffle(vertices)
+            for v in vertices:
+                c = current_covered + [e for e in self.vertex_cover(v, depth) if
+                                       not (e in current_covered or (e[1], e[0]) in current_covered)]
+                best, best_covered = self.vertex_cover_brute(k, depth, vertices, edges,
+                                                             best, best_covered, current + [v], c)
 
-        return result, highest_covered
+        return best, best_covered
 
-    def vertex_degree(self, v: int, depth: int = 1, current_depth: int = 0, covered: [int] = None):
+    def vertex_cover_kernelized_brute(self, k: int, depth: int = 1, vertices: [int] = None, edges: [(int, int)] = None,
+                                      best: [int] = None, best_covered: [(int, int)] = None,
+                                      current: [int] = None, current_covered: [(int, int)] = None):
+        # All edges in graph
+        if edges is None:
+            edges = self.edges()
+        # All vertices without edges, since we don't want to consider vertices without edges
+        if vertices is None:
+            vertices = [v for v in self.vertices() if not self.is_isolated(v)]
+        # Best case result [vertex]
+        if best is None:
+            best = []
+        # Edges best vertices cover [(vertex, vertex)]
+        if best_covered is None:
+            best_covered = []
+        # Current result in recursion [vertex]
+        if current is None:
+            current = []
+        # Edges current vertices in recursion cover [(vertex, vertex)]
+        if current_covered is None:
+            current_covered = []
+
+        # If there are more vertices > k, return all vertices
+        if k >= len(vertices):
+            return vertices, edges
+
+        # If current has less vertices than result and contains all edges, return
+        if k == -1 and len(current_covered) == len(edges) and (best == [] or len(current) < len(best)):
+            print(current, current_covered)
+            return current, current_covered
+
+        # If k is equal to current and current covers more edges than best, return
+        if k == len(current) and len(current_covered) > len(best_covered):
+            return current, current_covered
+
+        # Recursively do this for all vertices, until a solution is found.
+        if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
+            # Get all vertices that have not been covered and shuffle them
+            vertices = [u for u in vertices if u not in current]
+            random.shuffle(vertices)
+            for v in vertices:
+                c = current_covered + [e for e in self.vertex_cover(v, depth) if
+                                       not (e in current_covered or (e[1], e[0]) in current_covered)]
+                best, best_covered = self.vertex_cover_kernelized_brute(k, depth, vertices, edges,
+                                                                        best, best_covered, current + [v], c)
+
+        return best, best_covered
+
+    def vertex_cover(self, v: int, depth: int = 1, current_depth: int = 0, covered: [(int, int)] = None):
         if covered is None:
             covered = []
 
         if current_depth < depth:
             for u in [e for e in self.graph[str(v)] if not ((v, e) in covered or (e, v) in covered)]:
-                covered = self.vertex_degree(u, depth, current_depth + 1, covered + [(v, u)])
+                covered = self.vertex_cover(u, depth, current_depth + 1, covered + [(v, u)])
 
         return covered
 
@@ -218,12 +270,12 @@ class Graph:
                 remaining_non_pendant_vertices = [u for u in self.graph[str(v)] if
                                                   not self.is_pendant(u) and not u == v]
                 if len(remaining_non_pendant_vertices) > 0:
-                    if len(self.graph[str(v)]) > 1:
+                    if self.degree(v) > 1:
                         self.remove_edge(v, random.choice(remaining_non_pendant_vertices))
                     else:
                         self.add_edge(v, random.choice(remaining_non_pendant_vertices))
                 else:
-                    if len(self.graph[str(v)]) > 1:
+                    if self.degree(v) > 1:
                         self.remove_edge(v, random.choice(self.graph[str(v)]))
                     else:
                         self.connect_vertex_to_random(v)
@@ -239,18 +291,18 @@ class Graph:
 
         if len(non_tops_vertices) > 0:
             v = random.choice(non_tops_vertices)
-            while not self.is_tops(v, k) and len(self.graph[str(v)]) + 1 < len(self.vertices()):
+            while not self.is_tops(v, k) and self.degree(v) + 1 < len(self.vertices()):
                 self.connect_vertex_to_random(v)
 
     def decrease_tops_vertices(self, k: int):
         tops_vertices = [v for v in self.vertices() if self.is_tops(v, k)]
         if len(tops_vertices) > 0:
             v = random.choice(tops_vertices)
-            while self.is_tops(v, k) and len(self.graph[str(v)]) > 0:
+            while self.is_tops(v, k) and self.degree(v) > 0:
                 self.remove_random_edge(v)
 
-    def degree(self, vertex: int):
-        return len(self.graph[str(vertex)])
+    def degree(self, v: int, depth: int = 1):
+        return len(self.vertex_cover(v, depth))
 
     def is_isolated(self, vertex: int):
         return self.degree(vertex) == 0
