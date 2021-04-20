@@ -13,8 +13,8 @@ export default function (props: {
     const server = process.env.REACT_APP_SERVER_URL;
     const {width} = useWindowDimensions();
     const [query, setQuery] = useState<PromiseWithCancel<any> | undefined>();
-
-    const [vertexCoverTime, setVertexCoverTime] = useState<number>(0)
+    const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
+    const [vertexCoverTimeKernelized, setVertexCoverTimeKernelized] = useState<number>(0)
     const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
@@ -90,6 +90,18 @@ export default function (props: {
         }, "vertex cover search");
     }
 
+    const getKernelizedBruteForce = () => {
+        alert("Has not been implemented yet.")
+        // doFetch('/vertex-cover-kernelized', "POST", {
+        //     graph: props.data,
+        //     depth: coverDepth,
+        //     k: coverK
+        // }, res => {
+        //     props.setCover({depth: coverDepth, vertices: res.data})
+        //     setVertexCoverTimeKernelized((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
+        // }, "vertex cover search kernelized");
+    }
+
     const getKernelization = (graph?: {}) => {
         doFetch('/kernelization', "POST", {
             graph: graph != undefined ? graph : props.data,
@@ -120,7 +132,7 @@ export default function (props: {
                     <Button intent="danger" onClick={() => query?.cancel()}>Cancel</Button>
                 </Card>
             </Popup>
-            <Card style={{display: "flex", flexDirection: "column", overflowY: "scroll", minWidth: "264px"}}>
+            <Card style={{display: "flex", flexDirection: "column", overflowY: "scroll", maxWidth: "300px", width: "300px", minWidth: "264px"}}>
                 <div style={{display: "flex", flexDirection: "column"}}>
                     <H6>Undirected graph
                         <Button minimal small icon={generateOpen ? "chevron-up" : "chevron-down"}
@@ -223,12 +235,20 @@ export default function (props: {
                                 onValueChange={setCoverDepth}
                             />
                         </FormGroup>
+                        <H6 style={{color: "#137CBD"}}>Brute force vertex cover</H6>
                         <ButtonGroup>
                             <Button
                                 onClick={getVertexCover}
                             >Brute force search</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : ""}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : "Brute force has not been run yet."}</p>
+                        <H6 style={{color: "#137CBD"}}>Brute force vertex cover with kernelization</H6>
+                        <ButtonGroup>
+                            <Button
+                                onClick={getKernelizedBruteForce}
+                            >Brute force search with kernelization</Button>
+                        </ButtonGroup>
+                        <p style={{marginTop: "10px"}}>{vertexCoverTimeKernelized > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTimeKernelized + " seconds" : "Brute force with kernelization has not been run yet."}</p>
                     </Collapse>
                 </div>
                 <div style={{
