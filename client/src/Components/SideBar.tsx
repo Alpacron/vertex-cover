@@ -14,7 +14,7 @@ export default function (props: {
     const {width} = useWindowDimensions();
     const [query, setQuery] = useState<PromiseWithCancel<any> | undefined>();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
-    const [vertexCoverTimeKernelized, setVertexCoverTimeKernelized] = useState<number>(0)
+    const [vertexCoverKernelizedTime, setVertexCoverKernelizedTime] = useState<number>(0);
     const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
@@ -79,27 +79,19 @@ export default function (props: {
         }, "generate graph");
     }
 
-    const getVertexCover = () => {
-        doFetch('/vertex-cover', "POST", {
+    const getVertexCover = (path: string) => {
+        doFetch(path, "POST", {
             graph: props.data,
             depth: coverDepth,
             k: coverK
         }, res => {
             props.setCover({depth: coverDepth, vertices: res.data})
-            setVertexCoverTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
+            if(path.includes("kernelized")) {
+                setVertexCoverKernelizedTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000)
+            } else {
+                setVertexCoverTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
+            }
         }, "vertex cover search");
-    }
-
-    const getKernelizedBruteForce = () => {
-        alert("Has not been implemented yet.")
-        // doFetch('/vertex-cover-kernelized', "POST", {
-        //     graph: props.data,
-        //     depth: coverDepth,
-        //     k: coverK
-        // }, res => {
-        //     props.setCover({depth: coverDepth, vertices: res.data})
-        //     setVertexCoverTimeKernelized((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
-        // }, "vertex cover search kernelized");
     }
 
     const getKernelization = (graph?: {}) => {
@@ -238,17 +230,17 @@ export default function (props: {
                         <H6 style={{color: "#137CBD"}}>Brute force vertex cover</H6>
                         <ButtonGroup>
                             <Button
-                                onClick={getVertexCover}
+                                onClick={() => {getVertexCover('/vertex-cover')}}
                             >Brute force search</Button>
                         </ButtonGroup>
                         <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : "Brute force has not been run yet."}</p>
                         <H6 style={{color: "#137CBD"}}>Brute force vertex cover with kernelization</H6>
                         <ButtonGroup>
                             <Button
-                                onClick={getKernelizedBruteForce}
+                                onClick={() => {getVertexCover('/vertex-cover-kernelized')}}
                             >Brute force search with kernelization</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverTimeKernelized > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverTimeKernelized + " seconds" : "Brute force with kernelization has not been run yet."}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverKernelizedTime > 0 && props.cover.vertices.length > 0? "Vertex cover took: " + vertexCoverKernelizedTime + " seconds" : "Brute force with kernelization has not been run yet."}</p>
                     </Collapse>
                 </div>
                 <div style={{

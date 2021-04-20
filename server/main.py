@@ -62,6 +62,12 @@ def vertex_cover(c: CoverItem):
     return graph.vertex_cover_brute(c.k, c.depth)[0]
 
 
+@app.post("/vertex-cover-kernelized")
+def vertex_cover(c: CoverItem):
+    graph = Graph(c.graph)
+    return graph.vertex_cover_kernelized_brute(c.k, c.depth)[0]
+
+
 @app.put("/increase-pendants")
 def increase_pendants(g: UpdateItem):
     graph = Graph(g.graph)
