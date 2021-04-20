@@ -1,8 +1,8 @@
-import Popup from "./Components/Popup";
+import Popup from "./Popup";
 import {Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput, Spinner} from "@blueprintjs/core";
-import Clock from "./Components/Clock";
+import Clock from "./Clock";
 import React, {Dispatch, RefObject, SetStateAction, useEffect, useState} from "react";
-import useWindowDimensions from "./Util/useWindowDimensions";
+import useWindowDimensions from "../Util/useWindowDimensions";
 
 export default function (props: {
     data: {}, setData: Dispatch<SetStateAction<{}>>,

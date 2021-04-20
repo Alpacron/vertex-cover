@@ -4,7 +4,7 @@ import convertToD3Graph from "./Util/convertToD3Graph";
 import './App.css';
 import {Graph} from "react-d3-graph";
 import {FocusStyleManager} from "@blueprintjs/core";
-import Card from "./Card";
+import Card from "./Components/SideBar";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
