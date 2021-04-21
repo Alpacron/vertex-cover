@@ -3,88 +3,9 @@ import {Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput, Spinne
 import Clock from "./Clock";
 import React, {Dispatch, RefObject, SetStateAction, useEffect, useRef, useState} from "react";
 import useWindowDimensions from "../Util/useWindowDimensions";
-
-function getCaretPosition(element: HTMLPreElement) {
-    let caretOffset = 0;
-    let doc = element.ownerDocument;
-    let win = doc.defaultView;
-    let sel;
-    if (win != null && typeof win.getSelection != "undefined") {
-        sel = win.getSelection();
-        if (sel != null && sel.rangeCount > 0) {
-            let range = sel.getRangeAt(0);
-            let preCaretRange = range.cloneRange();
-            preCaretRange.selectNodeContents(element);
-            preCaretRange.setEnd(range.endContainer, range.endOffset);
-            caretOffset = preCaretRange.toString().length;
-        }
-    }
-    return caretOffset;
-}
-
-function setCaretPosition(element: any, caretOffset: number) {
-    let count = 0;
-
-    for (let n = 0; n < element.childNodes.length; n++) {
-        let len = 0;
-        if (element.childNodes[n].innerText != undefined)
-            len = element.childNodes[n].innerText.length;
-        else
-            len = element.childNodes[n].length;
-        if (count + len >= caretOffset) {
-            let range = document.createRange();
-            let sel = window.getSelection();
-            if (element.childNodes[n].innerText != undefined)
-                range.setStart(element.childNodes[n].childNodes[0], caretOffset - count);
-            else
-                range.setStart(element.childNodes[n], caretOffset - count);
-            range.collapse(true);
-            if (sel != null) {
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }
-            element.focus();
-            break;
-        }
-        count += len;
-    }
-}
-
-function prettifyJson(json: any) {
-    if (typeof json != 'string') {
-        json = JSON.stringify(json, function (k, v) {
-            if (v instanceof Array)
-                return JSON.stringify(v);
-            return v;
-        }, 4).replaceAll("\"[", "[").replaceAll("]\"", "]");
-    }
-    if (json != undefined) {
-        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        let reg = /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)|(((?!("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?))(.|\n))+)/g;
-        json = json.replace(reg, function (match: any) {
-            let cls = '';if (/^"/.test(match)) {
-                if (/:$/.test(match)) {
-                    cls = ' class="key"';
-                    match = match.replace(":", "")
-                } else {
-                    cls = ' class="string"';
-                }
-            } else if (/true|false/.test(match)) {
-                cls = ' class="boolean"';
-            } else if (/null/.test(match)) {
-                cls = ' class="null"';
-            } else if (/^\d+(\.\d*)?$/.test(match)) {
-                cls = ' class="number"'
-            }
-            let s = '<span' + cls + '>' + match + '</span>';
-            if(cls.includes("key"))
-                s += ":"
-            return s;
-        });
-        return json;
-    }
-    return ""
-}
+import getCaretPosition from "../Util/getCaretPosition";
+import setCaretPosition from "../Util/setCaretPosition";
+import prettifyJSON from "../Util/prettifyJSON";
 
 export default function (props: {
     data: {}, setData: Dispatch<SetStateAction<{}>>,
@@ -119,7 +40,7 @@ export default function (props: {
 
     const setGraphText = (json: {} | string) => {
         if (graphDiv.current != null) {
-            graphDiv.current.innerHTML = prettifyJson(json);
+            graphDiv.current.innerHTML = prettifyJSON(json);
         }
     }
 
@@ -419,8 +340,14 @@ export default function (props: {
                 <div className="container__graph-area" ref={props.graphBoundingRef}>
                     {props.graphElement}
                 </div>
-                <Card style={{maxHeight: "25%", margin: "1px", marginTop: "1em", padding: 0}}>
-                    <pre style={{maxHeight: "100%", overflowY: "auto", whiteSpace: "pre-wrap", margin: 0, padding: "1em"}} ref={graphDiv} contentEditable onKeyDown={e => {
+                <Card style={{maxHeight: "25%", margin: "1px", marginTop: "1em", padding: 0, display: "flex", flexDirection: "row-reverse"}}>
+                    <Button icon="chevron-right" style={{margin: "1em", position: "absolute"}} small onClick={() => {
+                        if(graphDiv.current != null) {
+                            console.log(JSON.parse(graphDiv.current.innerText));
+                            props.setData(JSON.parse(graphDiv.current.innerText));
+                        }
+                    }}>Generate</Button>
+                    <pre spellCheck="false" style={{maxHeight: "100%", overflowY: "auto", whiteSpace: "pre-wrap", margin: 0, padding: "1em", width: "100%"}} ref={graphDiv} contentEditable onKeyDown={e => {
                         if (e.key === "Enter") {
                             document.execCommand('insertHTML', false, '\n');
                             e.preventDefault()
