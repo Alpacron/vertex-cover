@@ -24,7 +24,7 @@ export default function (json: any) {
                 cls = 'null';
             }
             let s = '<span class="' + cls + '">' + match + '</span>';
-            if(cls.includes("key"))
+            if (cls.includes("key"))
                 s += ":"
             return s;
         });

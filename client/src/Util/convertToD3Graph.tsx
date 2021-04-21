@@ -12,7 +12,7 @@ function getCover(graph: any, vertex: number, depth: number, currentDepth: numbe
     return covered
 }
 
-export default function (graph: any, cover: {depth: number, vertices: number[]}, kernel: { isolated: number[], pendant: number[], tops: number[] }): GraphData<any, any> {
+export default function (graph: any, cover: { depth: number, vertices: number[] }, kernel: { isolated: number[], pendant: number[], tops: number[] }): GraphData<any, any> {
     let nodes: { id: number, color: string }[] = [];
     let links: { source: number, target: number, color: string }[] = [];
     let covered: { source: number, target: number }[] = [];

@@ -340,14 +340,42 @@ export default function (props: {
                 <div className="container__graph-area" ref={props.graphBoundingRef}>
                     {props.graphElement}
                 </div>
-                <Card style={{maxHeight: "25%", margin: "1px", marginTop: "1em", padding: 0, display: "flex", flexDirection: "row-reverse"}}>
+                <Card style={{
+                    maxHeight: "25%",
+                    margin: "1px",
+                    marginTop: "1em",
+                    padding: 0,
+                    display: "flex",
+                    flexDirection: "row-reverse"
+                }}>
                     <Button icon="chevron-right" style={{margin: "1em", position: "absolute"}} small onClick={() => {
-                        if(graphDiv.current != null) {
-                            console.log(JSON.parse(graphDiv.current.innerText));
-                            props.setData(JSON.parse(graphDiv.current.innerText));
+                        if (graphDiv.current != null) {
+                            // Checking if graph is a valid json graph
+                            if (/^{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+(,\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+(,\d+)*)?][\s\n]*))*}$/g.test(graphDiv.current.innerText)) {
+                                let json = JSON.parse(graphDiv.current.innerText);
+                                // Checking if every connection goes both ways, else add connection
+                                Object.keys(json).forEach(key => {
+                                    json[key].forEach((con: any) => {
+                                        if (!json[con].includes(parseInt(key))) {
+                                            json[con].push(parseInt(key));
+                                        }
+                                    })
+                                });
+                                // set data to json
+                                props.setData(json);
+                            } else {
+                                alert("Invalid graph!")
+                            }
                         }
                     }}>Generate</Button>
-                    <pre spellCheck="false" style={{maxHeight: "100%", overflowY: "auto", whiteSpace: "pre-wrap", margin: 0, padding: "1em", width: "100%"}} ref={graphDiv} contentEditable onKeyDown={e => {
+                    <pre spellCheck="false" style={{
+                        maxHeight: "100%",
+                        overflowY: "auto",
+                        whiteSpace: "pre-wrap",
+                        margin: 0,
+                        padding: "1em",
+                        width: "100%"
+                    }} ref={graphDiv} contentEditable onKeyDown={e => {
                         if (e.key === "Enter") {
                             document.execCommand('insertHTML', false, '\n');
                             e.preventDefault()
