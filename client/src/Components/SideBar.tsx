@@ -356,7 +356,7 @@ export default function (props: {
                                 // Checking if every connection goes both ways, else add connection
                                 Object.keys(json).forEach((key: string) => {
                                     json[key].forEach((con: string) => {
-                                        if(key == con) {
+                                        if(key == con || json[con] == undefined) {
                                             json[key].splice(json[key].indexOf(con));
                                         } else if (!json[con].includes(parseInt(key))) {
                                             json[con].push(parseInt(key));
