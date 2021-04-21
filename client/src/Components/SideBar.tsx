@@ -1,12 +1,94 @@
 import Popup from "./Popup";
 import {Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput, Spinner} from "@blueprintjs/core";
 import Clock from "./Clock";
-import React, {Dispatch, RefObject, SetStateAction, useEffect, useState} from "react";
+import React, {Dispatch, RefObject, SetStateAction, useEffect, useRef, useState} from "react";
 import useWindowDimensions from "../Util/useWindowDimensions";
+
+function getCaretPosition(element: HTMLPreElement) {
+    let caretOffset = 0;
+    let doc = element.ownerDocument;
+    let win = doc.defaultView;
+    let sel;
+    if (win != null && typeof win.getSelection != "undefined") {
+        sel = win.getSelection();
+        if (sel != null && sel.rangeCount > 0) {
+            let range = sel.getRangeAt(0);
+            let preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+    }
+    return caretOffset;
+}
+
+function setCaretPosition(element: any, caretOffset: number) {
+    let count = 0;
+
+    for (let n = 0; n < element.childNodes.length; n++) {
+        let len = 0;
+        if (element.childNodes[n].innerText != undefined)
+            len = element.childNodes[n].innerText.length;
+        else
+            len = element.childNodes[n].length;
+        if (count + len >= caretOffset) {
+            let range = document.createRange();
+            let sel = window.getSelection();
+            if (element.childNodes[n].innerText != undefined)
+                range.setStart(element.childNodes[n].childNodes[0], caretOffset - count);
+            else
+                range.setStart(element.childNodes[n], caretOffset - count);
+            range.collapse(true);
+            if (sel != null) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+            element.focus();
+            break;
+        }
+        count += len;
+    }
+}
+
+function prettifyJson(json: any) {
+    if (typeof json != 'string') {
+        json = JSON.stringify(json, function (k, v) {
+            if (v instanceof Array)
+                return JSON.stringify(v);
+            return v;
+        }, 4).replaceAll("\"[", "[").replaceAll("]\"", "]");
+    }
+    if (json != undefined) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        let reg = /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)|(((?!("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?))(.|\n))+)/g;
+        json = json.replace(reg, function (match: any) {
+            let cls = '';if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = ' class="key"';
+                    match = match.replace(":", "")
+                } else {
+                    cls = ' class="string"';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = ' class="boolean"';
+            } else if (/null/.test(match)) {
+                cls = ' class="null"';
+            } else if (/^\d+(\.\d*)?$/.test(match)) {
+                cls = ' class="number"'
+            }
+            let s = '<span' + cls + '>' + match + '</span>';
+            if(cls.includes("key"))
+                s += ":"
+            return s;
+        });
+        return json;
+    }
+    return ""
+}
 
 export default function (props: {
     data: {}, setData: Dispatch<SetStateAction<{}>>,
-    cover: {depth: number, vertices: number[]}, setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[]; }>>,
+    cover: { depth: number, vertices: number[] }, setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[]; }>>,
     kernel: { isolated: number[], pendant: number[], tops: number[] }, setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[]; }>>,
     graphElement: JSX.Element, graphBoundingRef: RefObject<HTMLDivElement>
 }) {
@@ -24,10 +106,22 @@ export default function (props: {
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(2);
     const [probability, setProbability] = useState<number>(0.5);
+    const graphDiv = useRef<HTMLPreElement>(null);
 
     useEffect(() => {
         props.setData({"0": [1], "1": [0]});
     }, []);
+
+    useEffect(() => {
+        setGraphText(props.data);
+    }, [props.data]);
+
+
+    const setGraphText = (json: {} | string) => {
+        if (graphDiv.current != null) {
+            graphDiv.current.innerHTML = prettifyJson(json);
+        }
+    }
 
     useEffect(() => {
         props.setKernel({isolated: [], pendant: [], tops: []});
@@ -86,7 +180,7 @@ export default function (props: {
             k: coverK
         }, res => {
             props.setCover({depth: coverDepth, vertices: res.data})
-            if(path.includes("kernelized")) {
+            if (path.includes("kernelized")) {
                 setVertexCoverKernelizedTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000)
             } else {
                 setVertexCoverTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
@@ -124,7 +218,14 @@ export default function (props: {
                     <Button intent="danger" onClick={() => query?.cancel()}>Cancel</Button>
                 </Card>
             </Popup>
-            <Card style={{display: "flex", flexDirection: "column", overflowY: "scroll", maxWidth: "300px", width: "300px", minWidth: "264px"}}>
+            <Card style={{
+                display: "flex",
+                flexDirection: "column",
+                overflowY: "scroll",
+                maxWidth: "300px",
+                width: "300px",
+                minWidth: "264px"
+            }}>
                 <div style={{display: "flex", flexDirection: "column"}}>
                     <H6>Undirected graph
                         <Button minimal small icon={generateOpen ? "chevron-up" : "chevron-down"}
@@ -230,17 +331,21 @@ export default function (props: {
                         <H6 style={{color: "#137CBD"}}>Brute force vertex cover</H6>
                         <ButtonGroup>
                             <Button
-                                onClick={() => {getVertexCover('/vertex-cover')}}
+                                onClick={() => {
+                                    getVertexCover('/vertex-cover')
+                                }}
                             >Brute force search</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0? "Vertex cover took: " + vertexCoverTime + " seconds" : "Brute force has not been run yet."}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 ? "Vertex cover took: " + vertexCoverTime + " seconds" : "Brute force has not been run yet."}</p>
                         <H6 style={{color: "#137CBD"}}>Brute force vertex cover with kernelization</H6>
                         <ButtonGroup>
                             <Button
-                                onClick={() => {getVertexCover('/vertex-cover-kernelized')}}
+                                onClick={() => {
+                                    getVertexCover('/vertex-cover-kernelized')
+                                }}
                             >Brute force search with kernelization</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverKernelizedTime > 0? "Vertex cover took: " + vertexCoverKernelizedTime + " seconds" : "Brute force with kernelization has not been run yet."}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverKernelizedTime > 0 ? "Vertex cover took: " + vertexCoverKernelizedTime + " seconds" : "Brute force with kernelization has not been run yet."}</p>
                     </Collapse>
                 </div>
                 <div style={{
@@ -301,8 +406,7 @@ export default function (props: {
                     </Collapse>
                 </div>
             </Card>
-            <div className="container__graph-area" ref={props.graphBoundingRef}>
-                {props.graphElement}
+            <div style={{overflow: "hidden", margin: "1em", display: "flex", flex: "auto", flexDirection: "column"}}>
                 <div style={{
                     position: "absolute",
                     pointerEvents: "none",
@@ -312,6 +416,23 @@ export default function (props: {
                 }}>
                     <Spinner/>
                 </div>
+                <div className="container__graph-area" ref={props.graphBoundingRef}>
+                    {props.graphElement}
+                </div>
+                <Card style={{maxHeight: "25%", margin: "1px", marginTop: "1em", padding: 0}}>
+                    <pre style={{maxHeight: "100%", overflowY: "auto", whiteSpace: "pre-wrap", margin: 0, padding: "1em"}} ref={graphDiv} contentEditable onKeyDown={e => {
+                        if (e.key === "Enter") {
+                            document.execCommand('insertHTML', false, '\n');
+                            e.preventDefault()
+                        }
+                    }} onInput={() => {
+                        if (graphDiv.current != null) {
+                            let pos = getCaretPosition(graphDiv.current);
+                            setGraphText(graphDiv.current.innerText);
+                            setCaretPosition(graphDiv.current, pos);
+                        }
+                    }}/>
+                </Card>
             </div>
         </>
     )
