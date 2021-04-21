@@ -354,9 +354,11 @@ export default function (props: {
                             if (/^{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+(,\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+(,\d+)*)?][\s\n]*))*}$/g.test(graphDiv.current.innerText)) {
                                 let json = JSON.parse(graphDiv.current.innerText);
                                 // Checking if every connection goes both ways, else add connection
-                                Object.keys(json).forEach(key => {
-                                    json[key].forEach((con: any) => {
-                                        if (!json[con].includes(parseInt(key))) {
+                                Object.keys(json).forEach((key: string) => {
+                                    json[key].forEach((con: string) => {
+                                        if(key == con) {
+                                            json[key].splice(json[key].indexOf(con));
+                                        } else if (!json[con].includes(parseInt(key))) {
                                             json[con].push(parseInt(key));
                                         }
                                     })
