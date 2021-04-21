@@ -351,10 +351,14 @@ export default function (props: {
                     <Button icon="chevron-right" style={{margin: "1em", position: "absolute"}} small onClick={() => {
                         if (graphDiv.current != null) {
                             // Checking if graph is a valid json graph
-                            if (/^{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+(,\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+(,\d+)*)?][\s\n]*))*}$/g.test(graphDiv.current.innerText)) {
+                            if (/^{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*))*}$/g.test(graphDiv.current.innerText)) {
                                 let json = JSON.parse(graphDiv.current.innerText);
                                 // Checking if every connection goes both ways, else add connection
                                 Object.keys(json).forEach((key: string) => {
+                                    // Sort and remove duplicates
+                                    json[key] = json[key].sort().filter(function(item: any, pos: any, ary: any) {
+                                        return !pos || item != ary[pos - 1];
+                                    });
                                     json[key].forEach((con: string) => {
                                         if(key == con || json[con] == undefined) {
                                             json[key].splice(json[key].indexOf(con));
