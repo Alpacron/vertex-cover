@@ -4,7 +4,7 @@ import convertToD3Graph from "./Util/convertToD3Graph";
 import './App.css';
 import {Graph} from "react-d3-graph";
 import {FocusStyleManager} from "@blueprintjs/core";
-import Card from "./Components/SideBar";
+import SideBar from "./Components/SideBar";
 
 FocusStyleManager.onlyShowFocusOnTabs();
 
@@ -62,7 +62,7 @@ export default function () {
 
     return (
         <div style={{display: "flex", flexDirection: "row-reverse", flex: "auto", overflow: "hidden"}}>
-            <Card
+            <SideBar
                 data={graph} setData={setGraph}
                 cover={cover} setCover={setCover}
                 kernel={kernel} setKernel={setKernel}

@@ -239,9 +239,10 @@ class Graph:
 
         # Recursively do this for all vertices, until a solution is found.
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
-            # Get all vertices that have not been covered and shuffle them
+            # TODO check if k can be reached with current vertices
+            # Get all vertices that have not been covered and sort them from highest to lowest degree
             vertices = [u for u in vertices if u not in current]
-            random.shuffle(vertices)
+            # TODO sort vertices
             for v in vertices:
                 c = current_covered + [e for e in self.vertex_cover(v, depth) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
