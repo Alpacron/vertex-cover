@@ -375,6 +375,7 @@ export default function (props: {
                         }
                     }}>Generate</Button>
                     <pre spellCheck="false" style={{
+                        minHeight: "52px",
                         maxHeight: "100%",
                         overflowY: "auto",
                         whiteSpace: "pre-wrap",

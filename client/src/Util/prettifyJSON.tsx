@@ -8,8 +8,9 @@ export default function (json: any) {
     }
     if (json != undefined) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        let reg = /"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
-        json = json.replace(reg, function (match: any) {
+        if(!json.endsWith("\n"))
+            json += "\n";
+        json = json.replace(/"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, function (match: any) {
             let cls = 'number';
             if (/^"/.test(match)) {
                 if (/:$/.test(match)) {

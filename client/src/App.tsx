@@ -75,7 +75,7 @@ export default function () {
                         staticGraph: false,
                         height: graphBoundingRef.current != null ? graphBoundingRef.current.offsetHeight : 0,
                         width: graphBoundingRef.current != null ? graphBoundingRef.current.offsetWidth : 0,
-                        minZoom: 1,
+                        minZoom: 0.5,
                         maxZoom: 8
                     }}
                 />} graphBoundingRef={graphBoundingRef}
