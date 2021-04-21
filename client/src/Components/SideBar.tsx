@@ -351,7 +351,7 @@ export default function (props: {
                     <Button icon="chevron-right" style={{margin: "1em", position: "absolute"}} small onClick={() => {
                         if (graphDiv.current != null) {
                             // Checking if graph is a valid json graph
-                            if (/^{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*))*}$/g.test(graphDiv.current.innerText)) {
+                            if (/^[\s\n]*{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*))*}[\s\n]*$/g.test(graphDiv.current.innerText)) {
                                 let json = JSON.parse(graphDiv.current.innerText);
                                 // Checking if every connection goes both ways, else add connection
                                 Object.keys(json).forEach((key: string) => {
