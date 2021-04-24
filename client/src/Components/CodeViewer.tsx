@@ -1,9 +1,10 @@
 import {Button, Card} from "@blueprintjs/core";
 import getCaretPosition from "../Util/getCaretPosition";
 import setCaretPosition from "../Util/setCaretPosition";
-import React, {Dispatch, RefObject, SetStateAction, useEffect, useRef} from "react";
+import React, {Dispatch, RefObject, SetStateAction, useEffect, useRef, useState} from "react";
 import {PromiseWithCancel} from "../Interfaces/PromiseWithCancel";
 import prettifyJSON from "../Util/prettifyJSON";
+import betterKeyDownActions from "../Util/betterKeyDownActions";
 
 export default function (props: {
     data: {},
@@ -12,6 +13,7 @@ export default function (props: {
     graphBoundingRef: RefObject<HTMLDivElement>
     query: PromiseWithCancel<any> | undefined
 }) {
+    const [pasted, setPasted] = useState<boolean>(false);
     const graphDiv = useRef<HTMLPreElement>(null);
 
     const setGraphText = (json: {} | string) => {
@@ -68,14 +70,13 @@ export default function (props: {
                 margin: 0,
                 padding: "1em",
                 width: "100%"
-            }} ref={graphDiv} contentEditable onKeyDown={e => {
-                if (e.key === "Enter") {
-                    document.execCommand('insertHTML', false, '\n');
-                    e.preventDefault()
-                }
-            }} onInput={() => {
+            }} ref={graphDiv} contentEditable onKeyDown={e => betterKeyDownActions(graphDiv.current, e, setPasted)} onInput={() => {
                 if (graphDiv.current != null) {
                     let pos = getCaretPosition(graphDiv.current);
+                    if(pasted) {
+                        console.log("a")
+                        setPasted(false);
+                    }
                     setGraphText(graphDiv.current.innerText);
                     setCaretPosition(graphDiv.current, pos);
                 }
