@@ -207,7 +207,7 @@ class Graph:
         # Recursively do this for all vertices, until a solution is found.
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
             # Get all vertices that have not been covered and shuffle them
-            vertices = [u for u in vertices if u not in current]
+            vertices = [u for u in vertices if len(current) == 0 or u > current[-1]]
             random.shuffle(vertices)
             for v in vertices:
                 c = current_covered + [e for e in self.vertex_cover(v, depth) if
@@ -226,6 +226,7 @@ class Graph:
         # All vertices without edges, since we don't want to consider vertices without edges
         if vertices is None:
             vertices = [v for v in self.vertices() if not self.is_isolated(v)]
+            vertices = [i[1] for i in sorted([(self.degree(u), u) for u in vertices], reverse=True)]
         # Best case result [vertex]
         if best is None:
             best = []
@@ -254,8 +255,8 @@ class Graph:
         # Recursively do this for all vertices, until a solution is found.
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
             # TODO check if k can be reached with current vertices
-            # Get all vertices that have not been covered and sort them from highest to lowest degree
-            vertices = [i[1] for i in sorted([(self.degree(u), u) for u in vertices if u not in current], reverse=True)]
+            # Get all vertices that have not been covered
+            vertices = [u for u in vertices if len(current) == 0 or u not in vertices[vertices.index(current[-1]):]]
             for v in vertices:
                 c = current_covered + [e for e in self.vertex_cover(v, depth) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
