@@ -101,6 +101,20 @@ def decrease_tops(g: TopsItem):
     return graph.graph
 
 
+@app.put("/increase-isolated")
+def increase_isolated(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.increase_isolated_vertices()
+    return graph.graph
+
+
+@app.put("/decrease-isolated")
+def decrease_isolated(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.decrease_isolated_vertices()
+    return graph.graph
+
+
 @app.post("/kernelization")
 def kernelization(g: TopsItem):
     graph = Graph(g.graph)
