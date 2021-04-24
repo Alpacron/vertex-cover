@@ -7,6 +7,8 @@ export default function (element: any, e: any, setPasted: Dispatch<SetStateActio
         let pos = getCaretPosition(element);
         if (e.key === "Enter") {
             document.execCommand('insertHTML', false, '\n');
+            pos = getCaretPosition(element);
+            const isSurrounded = /^[\[{]$/g.test(element.innerText.charAt(pos - 2)) && /^[\]}]$/g.test(element.innerText.charAt(pos));
             // Count every unfinished bracket before current position and add whitespaces
             let count = 0;
             for (let i = 0; i < element.innerText.length && i < pos; i++) {
@@ -18,6 +20,13 @@ export default function (element: any, e: any, setPasted: Dispatch<SetStateActio
             }
             if (count > 0)
                 document.execCommand('insertHTML', false, '    '.repeat(count));
+            pos = getCaretPosition(element);
+            if(isSurrounded) {
+                document.execCommand('insertHTML', false, '\n');
+                if (count > 1)
+                    document.execCommand('insertHTML', false, '    '.repeat(count - 1));
+                setCaretPosition(element, pos);
+            }
             e.preventDefault()
         } else if (/^[\[{"]$/g.test(e.key)) {
             let f = '}';

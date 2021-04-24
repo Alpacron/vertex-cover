@@ -29,7 +29,7 @@ export default function (props: {
     return (
 
         <Card style={{
-            maxHeight: "25%",
+            maxHeight: "40%",
             margin: "1px",
             marginTop: "1em",
             padding: 0,
@@ -69,7 +69,8 @@ export default function (props: {
                 whiteSpace: "pre-wrap",
                 margin: 0,
                 padding: "1em",
-                width: "100%"
+                width: "100%",
+                outline: "none"
             }} ref={graphDiv} contentEditable onKeyDown={e => betterKeyDownActions(graphDiv.current, e, setPasted)} onInput={() => {
                 if (graphDiv.current != null) {
                     let pos = getCaretPosition(graphDiv.current);
