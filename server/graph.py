@@ -14,6 +14,9 @@ class Graph:
             g2.update({str(vertex): [int(e) for e in g[vertex]]})
         self.graph = g2
 
+    def __str__(self):
+        return str(self.graph)
+
     def generate_graph(self, n: int, p: float):
         """
         Initialize from n vertices.
@@ -299,6 +302,23 @@ class Graph:
             v = random.choice(tops_vertices)
             while self.is_tops(v, k) and self.degree(v) > 0:
                 self.remove_random_edge(v)
+
+    def decrease_isolated_vertices(self):
+        isolated_vertices = [v for v in self.vertices() if self.is_isolated(v)]
+        self.connect_vertex_to_random(random.choice(isolated_vertices))
+
+    def increase_isolated_vertices(self):
+        non_isolated_vertices = [v for v in self.vertices() if not self.is_isolated(v)]
+
+        if len(non_isolated_vertices) > 0:
+            v = random.choice(non_isolated_vertices)
+            self.remove_all_edges(v)
+
+    def remove_all_edges(self, v: int):
+        edges = self.graph[str(v)]
+        for e in edges:
+            self.graph[str(e)].clear()
+        self.graph[str(v)].clear()
 
     def degree(self, v: int, depth: int = 1):
         return len(self.vertex_cover(v, depth))
