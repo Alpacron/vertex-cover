@@ -328,8 +328,7 @@ class Graph:
     def remove_all_edges(self, v: int):
         edges = self.graph[str(v)]
         for e in edges:
-            self.graph[str(e)].clear()
-        self.graph[str(v)].clear()
+            self.remove_edge(e, v)
 
     def degree(self, v: int, depth: int = 1):
         return len(self.vertex_cover(v, depth))
