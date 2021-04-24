@@ -225,8 +225,9 @@ class Graph:
             edges = self.edges()
         # All vertices without edges, since we don't want to consider vertices without edges
         if vertices is None:
-            vertices = [v for v in self.vertices() if not self.is_isolated(v)]
-            vertices = [i[1] for i in sorted([(self.degree(u), u) for u in vertices], reverse=True)]
+            vertices = [i[1] for i in
+                        sorted([(self.degree(u), u) for u in [v for v in self.vertices() if not self.is_isolated(v)]],
+                               reverse=True)]
         # Best case result [vertex]
         if best is None:
             best = []
