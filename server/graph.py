@@ -87,6 +87,11 @@ class Graph:
         self.graph[str(u)].remove(v)
         self.graph[str(v)].remove(u)
 
+    def remove_all_edges(self, v: int):
+        edges = list(self.graph[str(v)])
+        for e in edges:
+            self.remove_edge(e, v)
+
     def is_connected(self, u: int, v: int):
         """
         Check if two vertices are connected.
@@ -204,11 +209,12 @@ class Graph:
         if k == len(current) and len(current_covered) > len(best_covered):
             return current, current_covered
 
+        # Get all vertices that have not been covered and shuffle them
+        vertices = [u for u in vertices if len(current) == 0 or u > current[-1]]
+        random.shuffle(vertices)
+
         # Recursively do this for all vertices, until a solution is found.
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
-            # Get all vertices that have not been covered and shuffle them
-            vertices = [u for u in vertices if len(current) == 0 or u > current[-1]]
-            random.shuffle(vertices)
             for v in vertices:
                 c = current_covered + [e for e in self.vertex_cover(v, depth) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
@@ -217,13 +223,14 @@ class Graph:
 
         return best, best_covered
 
-    def vertex_cover_kernelized_brute(self, k: int, depth: int = 1, vertices: [int] = None, edges: [(int, int)] = None,
+    def vertex_cover_kernelized_brute(self, k: int, reach: int = 1, vertices: [int] = None, edges: [(int, int)] = None,
                                       best: [int] = None, best_covered: [(int, int)] = None,
                                       current: [int] = None, current_covered: [(int, int)] = None):
         # All edges in graph
         if edges is None:
             edges = self.edges()
-        # All vertices without edges, since we don't want to consider vertices without edges
+        # All vertices with edges, since we don't want to consider vertices without edges,
+        # sorted from highest degree to lowest.
         if vertices is None:
             vertices = [i[1] for i in
                         sorted([(self.degree(u), u) for u in [v for v in self.vertices() if not self.is_isolated(v)]],
@@ -253,26 +260,30 @@ class Graph:
         if k == len(current) and len(current_covered) > len(best_covered):
             return current, current_covered
 
+        # Get all vertices that have not been covered
+        vertices = [u for u in vertices if len(current) == 0 or u not in vertices[vertices.index(current[-1]):]]
+
         # Recursively do this for all vertices, until a solution is found.
-        if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
-            # TODO check if k can be reached with current vertices
-            # Get all vertices that have not been covered
-            vertices = [u for u in vertices if len(current) == 0 or u not in vertices[vertices.index(current[-1]):]]
+        # If amount of vertices in current is lower than best solution
+        # and vertex cover can be reached with vertices left
+        if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)) and (
+                len(best) == 0 or len(edges) < len(current_covered) + sum(
+                [self.degree(v) for v in vertices[:len(best) + 1 - len(current)]])):
             for v in vertices:
-                c = current_covered + [e for e in self.vertex_cover(v, depth) if
+                c = current_covered + [e for e in self.vertex_cover(v, reach) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
-                best, best_covered = self.vertex_cover_kernelized_brute(k, depth, vertices, edges,
+                best, best_covered = self.vertex_cover_kernelized_brute(k, reach, vertices, edges,
                                                                         best, best_covered, current + [v], c)
 
         return best, best_covered
 
-    def vertex_cover(self, v: int, depth: int = 1, current_depth: int = 0, covered: [(int, int)] = None):
+    def vertex_cover(self, v: int, reach: int = 1, current_depth: int = 0, covered: [(int, int)] = None):
         if covered is None:
             covered = []
 
-        if current_depth < depth:
+        if current_depth < reach:
             for u in [e for e in self.graph[str(v)] if not ((v, e) in covered or (e, v) in covered)]:
-                covered = self.vertex_cover(u, depth, current_depth + 1, covered + [(v, u)])
+                covered = self.vertex_cover(u, reach, current_depth + 1, covered + [(v, u)])
 
         return covered
 
@@ -326,12 +337,9 @@ class Graph:
             v = random.choice(non_isolated_vertices)
             self.remove_all_edges(v)
 
-    def remove_all_edges(self, v: int):
-        edges = list(self.graph[str(v)])
-        for e in edges:
-            self.remove_edge(e, v)
-
     def degree(self, v: int, depth: int = 1):
+        if depth == 1:
+            return len(self.graph[str(v)])
         return len(self.vertex_cover(v, depth))
 
     def is_isolated(self, vertex: int):
