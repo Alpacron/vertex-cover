@@ -326,7 +326,7 @@ class Graph:
             self.remove_all_edges(v)
 
     def remove_all_edges(self, v: int):
-        edges = self.graph[str(v)]
+        edges = list(self.graph[str(v)])
         for e in edges:
             self.remove_edge(e, v)
 
