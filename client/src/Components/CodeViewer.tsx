@@ -9,9 +9,12 @@ import betterKeyDownActions from "../Util/betterKeyDownActions";
 export default function (props: {
     data: {},
     setData: Dispatch<SetStateAction<{}>>,
-    graphElement: JSX.Element,
+    graphElement: RefObject<any>,
     graphBoundingRef: RefObject<HTMLDivElement>
     query: PromiseWithCancel<any> | undefined
+    setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[]; }>>,
+    setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[]; }>>,
+    coverDepth: number
 }) {
     const [pasted, setPasted] = useState<boolean>(false);
     const graphDiv = useRef<HTMLPreElement>(null);
@@ -56,6 +59,8 @@ export default function (props: {
                             })
                         });
                         // set data to json
+                        props.setKernel({isolated: [], pendant: [], tops: []});
+                        props.setCover({depth: props.coverDepth, vertices: []});
                         props.setData(json);
                     } else {
                         alert("Invalid graph!")
