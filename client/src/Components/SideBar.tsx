@@ -1,21 +1,19 @@
 import Popup from "./Popup";
-import {Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput, Spinner} from "@blueprintjs/core";
+import {Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput} from "@blueprintjs/core";
 import Clock from "./Clock";
-import React, {Dispatch, RefObject, SetStateAction, useEffect, useRef, useState} from "react";
+import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
 import useWindowDimensions from "../Util/useWindowDimensions";
-import getCaretPosition from "../Util/getCaretPosition";
-import setCaretPosition from "../Util/setCaretPosition";
-import prettifyJSON from "../Util/prettifyJSON";
+import {PromiseWithCancel} from "../Interfaces/PromiseWithCancel";
 
 export default function (props: {
     data: {}, setData: Dispatch<SetStateAction<{}>>,
     cover: { depth: number, vertices: number[] }, setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[]; }>>,
     kernel: { isolated: number[], pendant: number[], tops: number[] }, setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[]; }>>,
-    graphElement: JSX.Element, graphBoundingRef: RefObject<HTMLDivElement>
+    coverDepth: number, setCoverDepth: Dispatch<SetStateAction<number>>
+    doFetch: (path: string, method: string, body: any, resolve?: ((res: any) => void) | undefined, name?: string | undefined) => PromiseWithCancel<any> | undefined,
+    query: PromiseWithCancel<any> | undefined
 }) {
-    const server = process.env.REACT_APP_SERVER_URL;
     const {width} = useWindowDimensions();
-    const [query, setQuery] = useState<PromiseWithCancel<any> | undefined>();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
     const [vertexCoverKernelizedTime, setVertexCoverKernelizedTime] = useState<number>(0);
     const [generateOpen, setGenerateOpen] = useState(true);
@@ -23,70 +21,21 @@ export default function (props: {
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
     const [kernelizationOpen, setKernelizationOpen] = useState(false);
     const [coverK, setCoverK] = useState<number>(-1);
-    const [coverDepth, setCoverDepth] = useState<number>(1);
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
     const [probability, setProbability] = useState<number>(0.5);
-    const graphDiv = useRef<HTMLPreElement>(null);
 
     useEffect(() => {
         props.setData({"0": [1], "1": [0]});
     }, []);
 
     useEffect(() => {
-        setGraphText(props.data);
-    }, [props.data]);
-
-
-    const setGraphText = (json: {} | string) => {
-        if (graphDiv.current != null) {
-            graphDiv.current.innerHTML = prettifyJSON(json);
-        }
-    }
-
-    useEffect(() => {
         props.setKernel({isolated: [], pendant: [], tops: []});
-        props.setCover({depth: coverDepth, vertices: []});
-    }, [coverK, coverDepth, vertexDegree])
-
-    interface PromiseWithCancel<T> extends Promise<T> {
-        cancel: () => void;
-        dateTime: Date;
-        name: string
-    }
-
-    function doFetch(path: string, method: string, body: any, resolve?: (res: any) => void, name?: string) {
-        if (!query) {
-            props.setKernel({isolated: [], pendant: [], tops: []});
-            props.setCover({depth: coverDepth, vertices: []});
-            const controller = new AbortController();
-            const signal = controller.signal;
-            const promise = new Promise(async () => {
-                try {
-                    const response = await fetch(server + path, {
-                        method: method,
-                        body: JSON.stringify(body),
-                        signal
-                    });
-                    const data = await response.json();
-                    setQuery(undefined);
-                    if (resolve)
-                        resolve({data: data, query: (promise as PromiseWithCancel<any>)});
-                } catch (ex: any) {
-                    setQuery(undefined);
-                }
-            });
-            (promise as PromiseWithCancel<any>).cancel = () => controller.abort();
-            (promise as PromiseWithCancel<any>).dateTime = new Date();
-            if (name)
-                (promise as PromiseWithCancel<any>).name = name;
-            setQuery((promise as PromiseWithCancel<any>));
-            return (promise as PromiseWithCancel<any>);
-        }
-    }
+        props.setCover({depth: props.coverDepth, vertices: []});
+    }, [coverK, props.coverDepth, vertexDegree])
 
     const generateGraph = () => {
-        doFetch('/generate', "POST", {
+        props.doFetch('/generate', "POST", {
             "vertices": vertices,
             "probability": probability
         }, res => {
@@ -95,12 +44,12 @@ export default function (props: {
     }
 
     const getVertexCover = (path: string) => {
-        doFetch(path, "POST", {
+        props.doFetch(path, "POST", {
             graph: props.data,
-            depth: coverDepth,
+            depth: props.coverDepth,
             k: coverK
         }, res => {
-            props.setCover({depth: coverDepth, vertices: res.data})
+            props.setCover({depth: props.coverDepth, vertices: res.data})
             if (path.includes("kernelized")) {
                 setVertexCoverKernelizedTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000)
             } else {
@@ -110,7 +59,7 @@ export default function (props: {
     }
 
     const getKernelization = (graph?: {}) => {
-        doFetch('/kernelization', "POST", {
+        props.doFetch('/kernelization', "POST", {
             graph: graph != undefined ? graph : props.data,
             k: vertexDegree
         }, res => {
@@ -119,7 +68,7 @@ export default function (props: {
     }
 
     const putGraphResponse = (path: string) => {
-        doFetch(path, "PUT", {
+        props.doFetch(path, "PUT", {
             graph: props.data,
             k: vertexDegree
         }, res => {
@@ -129,14 +78,14 @@ export default function (props: {
 
     return (
         <>
-            <Popup open={query !== undefined} x={width / 2} y={20} transitionFade="0.5s" centerX
-                   style={{transitionDelay: query ? "0.5s" : "0s"}}>
+            <Popup open={props.query !== undefined} x={width / 2} y={20} transitionFade="0.5s" centerX
+                   style={{transitionDelay: props.query ? "0.5s" : "0s"}}>
                 <Card elevation={2}>
                     <p>
-                        <Clock minus={query ? query.dateTime.getTime() : 0} divider={1000}/>
-                        <p style={{display: "contents"}}>{query ? " seconds on task: " + query.name : ""}</p>
+                        <Clock minus={props.query ? props.query.dateTime.getTime() : 0} divider={1000}/>
+                        <p style={{display: "contents"}}>{props.query ? " seconds on task: " + props.query.name : ""}</p>
                     </p>
-                    <Button intent="danger" onClick={() => query?.cancel()}>Cancel</Button>
+                    <Button intent="danger" onClick={() => props.query?.cancel()}>Cancel</Button>
                 </Card>
             </Popup>
             <Card style={{
@@ -245,8 +194,8 @@ export default function (props: {
                                 min={1}
                                 id="depth"
                                 title="Amount of edges a single vortex can reach"
-                                value={coverDepth}
-                                onValueChange={setCoverDepth}
+                                value={props.coverDepth}
+                                onValueChange={props.setCoverDepth}
                             />
                         </FormGroup>
                         <H6 style={{color: "#137CBD"}}>Brute force vertex cover</H6>
@@ -341,75 +290,6 @@ export default function (props: {
                     </Collapse>
                 </div>
             </Card>
-            <div style={{overflow: "hidden", margin: "1em", display: "flex", flex: "auto", flexDirection: "column"}}>
-                <div style={{
-                    position: "absolute",
-                    pointerEvents: "none",
-                    opacity: query ? 1 : 0,
-                    transition: query ? "opacity 0.1s" : "opacity 0.3s",
-                    transitionDelay: query ? "0.05s" : "0.2s"
-                }}>
-                    <Spinner/>
-                </div>
-                <div className="container__graph-area" ref={props.graphBoundingRef}>
-                    {props.graphElement}
-                </div>
-                <Card style={{
-                    maxHeight: "25%",
-                    margin: "1px",
-                    marginTop: "1em",
-                    padding: 0,
-                    display: "flex",
-                    flexDirection: "row-reverse"
-                }}>
-                    <Button icon="chevron-right" style={{margin: "1em", position: "absolute"}} small onClick={() => {
-                        if (graphDiv.current != null) {
-                            // Checking if graph is a valid json graph
-                            if (/^[\s\n]*{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*))*}[\s\n]*$/g.test(graphDiv.current.innerText)) {
-                                let json = JSON.parse(graphDiv.current.innerText);
-                                // Checking if every connection goes both ways, else add connection
-                                Object.keys(json).forEach((key: string) => {
-                                    // Sort and remove duplicates
-                                    json[key] = json[key].sort().filter(function(item: any, pos: any, ary: any) {
-                                        return !pos || item != ary[pos - 1];
-                                    });
-                                    json[key].forEach((con: string) => {
-                                        if(key == con || json[con] == undefined) {
-                                            json[key].splice(json[key].indexOf(con));
-                                        } else if (!json[con].includes(parseInt(key))) {
-                                            json[con].push(parseInt(key));
-                                        }
-                                    })
-                                });
-                                // set data to json
-                                props.setData(json);
-                            } else {
-                                alert("Invalid graph!")
-                            }
-                        }
-                    }}>Generate</Button>
-                    <pre spellCheck="false" style={{
-                        minHeight: "52px",
-                        maxHeight: "100%",
-                        overflowY: "auto",
-                        whiteSpace: "pre-wrap",
-                        margin: 0,
-                        padding: "1em",
-                        width: "100%"
-                    }} ref={graphDiv} contentEditable onKeyDown={e => {
-                        if (e.key === "Enter") {
-                            document.execCommand('insertHTML', false, '\n');
-                            e.preventDefault()
-                        }
-                    }} onInput={() => {
-                        if (graphDiv.current != null) {
-                            let pos = getCaretPosition(graphDiv.current);
-                            setGraphText(graphDiv.current.innerText);
-                            setCaretPosition(graphDiv.current, pos);
-                        }
-                    }}/>
-                </Card>
-            </div>
         </>
     )
 }
