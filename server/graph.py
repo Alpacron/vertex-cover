@@ -255,8 +255,7 @@ class Graph:
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
             # TODO check if k can be reached with current vertices
             # Get all vertices that have not been covered and sort them from highest to lowest degree
-            vertices = [u for u in vertices if u not in current]
-            # TODO sort vertices
+            vertices = [i[1] for i in sorted([(self.degree(u), u) for u in vertices if u not in current], reverse=True)]
             for v in vertices:
                 c = current_covered + [e for e in self.vertex_cover(v, depth) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
