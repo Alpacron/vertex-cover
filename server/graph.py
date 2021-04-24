@@ -17,6 +17,17 @@ class Graph:
     def __str__(self):
         return str(self.graph)
 
+    def to_adj_matrix(self):
+        keys = sorted(self.graph.keys())
+        size = len(keys)
+
+        matrix = [[0] * size for _ in range(size)]
+
+        for a, b in [(keys.index(str(a)), keys.index(str(b))) for a, row in self.graph.items() for b in row]:
+            matrix[a][b] = 2 if (a == b) else 1
+
+        return matrix
+
     def generate_graph(self, n: int, p: float):
         """
         Initialize from n vertices.
