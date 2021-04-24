@@ -25,7 +25,7 @@ export default function (props: {
     const [coverK, setCoverK] = useState<number>(-1);
     const [coverDepth, setCoverDepth] = useState<number>(1);
     const [vertexDegree, setVertexDegree] = useState<number>(1);
-    const [vertices, setVertices] = useState<number>(2);
+    const [vertices, setVertices] = useState<number>(10);
     const [probability, setProbability] = useState<number>(0.5);
     const graphDiv = useRef<HTMLPreElement>(null);
 
@@ -278,6 +278,20 @@ export default function (props: {
                                 onClick={() => setKernelizationOpen(!kernelizationOpen)}/>
                     </H6>
                     <Collapse isOpen={kernelizationOpen} keepChildrenMounted>
+                        <H6 style={{color: "#137CBD"}}>Isolated vertices</H6>
+                        <FormGroup
+                            style={{display: "flex", flexDirection: "row", alignItems: "center"}}
+                            label="Number of isolated vertices"
+                        >
+                            <ButtonGroup style={{marginLeft: "1em"}}>
+                                <Button
+                                    onClick={() => putGraphResponse('/decrease-isolated')}
+                                >-</Button>
+                                <Button
+                                    onClick={() => putGraphResponse('/increase-isolated')}
+                                >+</Button>
+                            </ButtonGroup>
+                        </FormGroup>
                         <H6 style={{color: "#137CBD"}}>Pendants</H6>
                         <FormGroup
                             style={{display: "flex", flexDirection: "row", alignItems: "center"}}
