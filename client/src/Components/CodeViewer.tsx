@@ -1,4 +1,4 @@
-import {Button, Card} from "@blueprintjs/core";
+import {Button, ButtonGroup, Card} from "@blueprintjs/core";
 import getCaretPosition from "../Util/getCaretPosition";
 import setCaretPosition from "../Util/setCaretPosition";
 import React, {Dispatch, RefObject, SetStateAction, useEffect, useRef, useState} from "react";
@@ -39,7 +39,11 @@ export default function (props: {
             display: "flex",
             flexDirection: "row-reverse"
         }}>
-            <Button icon="chevron-right" style={{margin: "1em", position: "absolute"}} small onClick={() => {
+            <ButtonGroup style={{margin: "1em", position: "absolute"}}>
+                <Button icon="clipboard" onClick={() => {navigator.clipboard.writeText(graphDiv.current!.innerText)}}>
+                    Copy to clipboard
+                </Button>
+                <Button icon="chevron-right" small onClick={() => {
                 if (graphDiv.current != null) {
                     // Checking if graph is a valid json graph
                     if (/^[\s\n]*{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*))*}[\s\n]*$/g.test(graphDiv.current.innerText)) {
@@ -67,6 +71,7 @@ export default function (props: {
                     }
                 }
             }}>Generate</Button>
+            </ButtonGroup>
             <pre spellCheck="false" style={{
                 minHeight: "52px",
                 maxHeight: "100%",
