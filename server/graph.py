@@ -210,12 +210,12 @@ class Graph:
             return current, current_covered
 
         # Get all vertices that have not been covered and shuffle them
-        vertices = [u for u in vertices if len(current) == 0 or u > current[-1]]
-        random.shuffle(vertices)
+        ver = [u for u in vertices if len(current) == 0 or u > current[-1]]
+        random.shuffle(ver)
 
         # Recursively do this for all vertices, until a solution is found.
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)):
-            for v in vertices:
+            for v in ver:
                 c = current_covered + [e for e in self.vertex_cover(v, depth) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
                 best, best_covered = self.vertex_cover_brute(k, depth, vertices, edges,
@@ -261,7 +261,7 @@ class Graph:
             return current, current_covered
 
         # Get all vertices that have not been covered
-        vertices = [u for u in vertices if len(current) == 0 or u not in vertices[vertices.index(current[-1]):]]
+        ver = [u for u in vertices if len(current) == 0 or u not in vertices[vertices.index(current[-1]):]]
 
         # Recursively do this for all vertices, until a solution is found.
         # If amount of vertices in current is lower than best solution
@@ -269,7 +269,7 @@ class Graph:
         if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)) and (
                 len(best) == 0 or len(edges) < len(current_covered) + sum(
                 [self.degree(v) for v in vertices[:len(best) + 1 - len(current)]])):
-            for v in vertices:
+            for v in ver:
                 c = current_covered + [e for e in self.vertex_cover(v, reach) if
                                        not (e in current_covered or (e[1], e[0]) in current_covered)]
                 best, best_covered = self.vertex_cover_kernelized_brute(k, reach, vertices, edges,
