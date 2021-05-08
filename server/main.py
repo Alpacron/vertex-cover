@@ -65,7 +65,9 @@ def vertex_cover(c: CoverItem):
 @app.post("/vertex-cover-kernelized")
 def vertex_cover(c: CoverItem):
     graph = Graph(c.graph)
-    return graph.vertex_cover_kernelized_brute(c.k, c.depth)[0]
+    reduction = graph.kernelization(c.k)
+    reduction_graph = Graph(reduction[0])
+    return reduction_graph.vertex_cover_brute(c.k, c.depth, best=reduction[1])[0]
 
 
 @app.put("/increase-pendants")
@@ -118,4 +120,4 @@ def decrease_isolated(g: UpdateItem):
 @app.post("/kernelization")
 def kernelization(g: TopsItem):
     graph = Graph(g.graph)
-    return graph.perform_kernelization(g.k)
+    return graph.visualize_kernelization(g.k)

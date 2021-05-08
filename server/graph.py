@@ -1,4 +1,5 @@
 import random
+import json
 
 
 class Graph:
@@ -15,7 +16,7 @@ class Graph:
         self.graph = g2
 
     def __str__(self):
-        return str(self.graph)
+        return json.dumps(self.graph)
 
     def to_adj_matrix(self):
         keys = sorted(self.graph.keys())
@@ -68,6 +69,13 @@ class Graph:
         """
         if u not in self.vertices():
             self.graph[str(u)] = []
+
+    def remove_vertex(self, u: int):
+        """
+        Remove vertex from graph.
+        """
+        if u in self.vertices():
+            del self.graph[str(u)]
 
     def add_edge(self, u: int, v: int):
         """
@@ -223,60 +231,6 @@ class Graph:
 
         return best, best_covered
 
-    def vertex_cover_kernelized_brute(self, k: int, reach: int = 1, vertices: [int] = None, edges: [(int, int)] = None,
-                                      best: [int] = None, best_covered: [(int, int)] = None,
-                                      current: [int] = None, current_covered: [(int, int)] = None):
-        # All edges in graph
-        if edges is None:
-            edges = self.edges()
-        # All vertices with edges, since we don't want to consider vertices without edges,
-        # sorted from highest degree to lowest.
-        if vertices is None:
-            vertices = [i[1] for i in
-                        sorted([(self.degree(u), u) for u in [v for v in self.vertices() if not self.is_isolated(v)]],
-                               reverse=True)]
-        # Best case result [vertex]
-        if best is None:
-            best = []
-        # Edges best vertices cover [(vertex, vertex)]
-        if best_covered is None:
-            best_covered = []
-        # Current result in recursion [vertex]
-        if current is None:
-            current = []
-        # Edges current vertices in recursion cover [(vertex, vertex)]
-        if current_covered is None:
-            current_covered = []
-
-        # If there are more vertices > k, return all vertices
-        if k >= len(vertices):
-            return vertices, edges
-
-        # If current has less vertices than result and contains all edges, return
-        if k == -1 and len(current_covered) == len(edges) and (best == [] or len(current) < len(best)):
-            return current, current_covered
-
-        # If k is equal to current and current covers more edges than best, return
-        if k == len(current) and len(current_covered) > len(best_covered):
-            return current, current_covered
-
-        # Get all vertices that have not been covered
-        ver = [u for u in vertices if len(current) == 0 or u not in vertices[vertices.index(current[-1]):]]
-
-        # Recursively do this for all vertices, until a solution is found.
-        # If amount of vertices in current is lower than best solution
-        # and vertex cover can be reached with vertices left
-        if (k == -1 or len(current) < k) and (best == [] or len(current) < len(best)) and (
-                len(best) == 0 or len(edges) < len(current_covered) + sum(
-                [self.degree(v) for v in vertices[:len(best) + 1 - len(current)]])):
-            for v in ver:
-                c = current_covered + [e for e in self.vertex_cover(v, reach) if
-                                       not (e in current_covered or (e[1], e[0]) in current_covered)]
-                best, best_covered = self.vertex_cover_kernelized_brute(k, reach, vertices, edges,
-                                                                        best, best_covered, current + [v], c)
-
-        return best, best_covered
-
     def vertex_cover(self, v: int, reach: int = 1, current_depth: int = 0, covered: [(int, int)] = None):
         if covered is None:
             covered = []
@@ -361,8 +315,44 @@ class Graph:
                 vertex = v
         return vertex
 
-    def perform_kernelization(self, k: int):
+    def visualize_kernelization(self, k: int):
         isolated = [v for v in self.vertices() if self.is_isolated(v)]
         pendant = [v for v in self.vertices() if self.is_pendant(v)]
         tops = [v for v in self.vertices() if self.is_tops(v, k)]
         return {"isolated": isolated, "pendant": pendant, "tops": tops}
+
+    def kernelization(self, k: int):
+        covered = []
+        # 1. If k > 0 and v is a vertex of degree greater than k, remove v from the graph and decrease k by one.
+        # Every vertex cover of size k must contain v, since other wise too many of its neighbours would have to
+        # be picked to cover the incident edges. Thus, an optimal vertex cover for the original graph may be
+        # formed from a cover of the reduced problem by adding v back to the cover.
+        while k > 0:
+            # Get all tops for k.
+            tops = [v for v in self.vertices() if self.is_tops(v, k)]
+
+            # If tops is not empty.
+            if len(tops) > 0:
+                # Remove random v from tops and decrease k by one.
+                v = tops[0]
+                self.remove_vertex(v)
+                covered.append(v)
+                k -= 1
+            else:
+                break
+
+        # 2. If v is an isolated vertex, remove it. Since, any v cannot cover any edges it is not a part of the
+        # minimal vertex cover.
+        isolated = [v for v in self.vertices() if self.is_isolated(v)]
+        for vertex in isolated:
+            self.remove_vertex(vertex)
+
+        # 3. If more than k^2 edges remain in the graph, and neither of the previous two rules can be applied,
+        # then the graph cannot contain a vertex cover of size k. For, after eliminating all vertices of degree
+        # greater than k, each remaining vertex can only cover at most k edges and a set of k vertices could only
+        # cover at most k^2 edges. In this case, the instance may be replaced by an instance with two vertices,
+        # one edge, and k = 0, which also has no solution.
+        if len(self.edges()) > k ** 2 and k is not -1:
+            return {}, None
+
+        return self.graph, covered
