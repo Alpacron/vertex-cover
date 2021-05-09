@@ -22,7 +22,7 @@ class GenerateItem(BaseModel):
 def generate(item: GenerateItem):
     graph = Graph()
     graph.generate_graph(item.vertices, item.probability)
-    return graph
+    return graph.graph
 
 
 class UpdateItem(BaseModel):
@@ -33,21 +33,21 @@ class UpdateItem(BaseModel):
 def connect_sub(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_sub_graphs()
-    return graph
+    return graph.graph
 
 
 @app.put("/connect-all-sub")
 def connect_all_sub(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_all_sub_graphs()
-    return graph
+    return graph.graph
 
 
 @app.put("/connect-random")
 def connect_random(g: UpdateItem):
     graph = Graph(g.graph)
     graph.connect_two_random_vertices()
-    return graph
+    return graph.graph
 
 
 class CoverItem(BaseModel):
@@ -62,18 +62,26 @@ def vertex_cover(c: CoverItem):
     return graph.vertex_cover_brute(c.k, c.depth)[0]
 
 
+@app.post("/vertex-cover-kernelized")
+def vertex_cover(c: CoverItem):
+    graph = Graph(c.graph)
+    reduction = graph.kernelization(c.k)
+    reduction_graph = Graph(reduction[0])
+    return reduction_graph.vertex_cover_brute(c.k, c.depth, best=reduction[1])[0]
+
+
 @app.put("/increase-pendants")
 def increase_pendants(g: UpdateItem):
     graph = Graph(g.graph)
     graph.increase_pendant_vertices()
-    return graph
+    return graph.graph
 
 
 @app.put("/decrease-pendants")
 def decrease_pendants(g: UpdateItem):
     graph = Graph(g.graph)
     graph.decrease_pendant_vertices()
-    return graph
+    return graph.graph
 
 
 class TopsItem(BaseModel):
@@ -85,17 +93,31 @@ class TopsItem(BaseModel):
 def increase_tops(g: TopsItem):
     graph = Graph(g.graph)
     graph.increase_tops_vertices(g.k)
-    return graph
+    return graph.graph
 
 
 @app.put("/decrease-tops")
 def decrease_tops(g: TopsItem):
     graph = Graph(g.graph)
     graph.decrease_tops_vertices(g.k)
-    return graph
+    return graph.graph
+
+
+@app.put("/increase-isolated")
+def increase_isolated(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.increase_isolated_vertices()
+    return graph.graph
+
+
+@app.put("/decrease-isolated")
+def decrease_isolated(g: UpdateItem):
+    graph = Graph(g.graph)
+    graph.decrease_isolated_vertices()
+    return graph.graph
 
 
 @app.post("/kernelization")
 def kernelization(g: TopsItem):
     graph = Graph(g.graph)
-    return graph.perform_kernelization(g.k)
+    return graph.visualize_kernelization(g.k)

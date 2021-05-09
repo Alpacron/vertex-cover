@@ -20,12 +20,10 @@
 }
 
 .container__graph-area {
-    max-height: 1000px;
     border: 1px dotted gray;
     z-index: 1;
     overflow: hidden;
-    margin: 1em;
-    flex: 1.3 0 0;
+    flex: auto;
     display: flex;
     flex-direction: column;
 }
@@ -33,3 +31,14 @@
 .bp3-form-content {
     display: flex;
 }
+
+textarea {
+    resize: none;
+}
+
+pre { caret-color: black; }
+.string { color: #D99E0B; }
+.number { color: #15B371; }
+.boolean { color: #137CBD; }
+.null { color: #A854A8; }
+.key { color: #DB3737; }

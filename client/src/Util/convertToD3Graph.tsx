@@ -12,12 +12,12 @@ function getCover(graph: any, vertex: number, depth: number, currentDepth: numbe
     return covered
 }
 
-export default function (graph: any, depth: number, cover: number[], kernel: { isolated: number[], pendant: number[], tops: number[] }): GraphData<any, any> {
+export default function (graph: any, cover: { depth: number, vertices: number[] }, kernel: { isolated: number[], pendant: number[], tops: number[] }): GraphData<any, any> {
     let nodes: { id: number, color: string }[] = [];
     let links: { source: number, target: number, color: string }[] = [];
     let covered: { source: number, target: number }[] = [];
-    if (cover.length > 0) {
-        cover.forEach(c => covered = getCover(graph, c, depth, 0, covered));
+    if (cover.vertices.length > 0) {
+        cover.vertices.forEach(c => covered = getCover(graph, c, cover.depth, 0, covered));
     } else if (kernel.pendant.length > 0 || kernel.tops.length > 0) {
         kernel.pendant.forEach(p => covered = getCover(graph, p, 1, 0, covered))
         kernel.tops.forEach(t => covered = getCover(graph, t, 1, 0, covered))
@@ -25,14 +25,14 @@ export default function (graph: any, depth: number, cover: number[], kernel: { i
 
     Object.keys(graph).forEach(v => {
         let color = "#d3d3d3";
-        if (cover.includes(+v))
+        if (cover.vertices.includes(+v))
             color = "#3f51b5";
-        else if (kernel.isolated.includes(+v))
-            color = "#D13913";
         else if (kernel.pendant.includes(+v))
             color = "#0D8050";
         else if (kernel.tops.includes(+v))
             color = "#137CBD";
+        else if (kernel.isolated.includes(+v))
+            color = "#D13913";
 
         nodes.push({id: +v, color: color});
 
