@@ -1,3 +1,5 @@
+import json
+
 from graph import Graph
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -27,6 +29,12 @@ def generate(item: GenerateItem):
 
 class UpdateItem(BaseModel):
     graph: Any
+
+
+@app.put("/get-matrix")
+def get_matrix(g: UpdateItem):
+    graph = Graph(g.graph)
+    return json.dumps(graph.to_adj_matrix())
 
 
 @app.put("/connect-sub")

@@ -40,10 +40,10 @@ export default function (props: {
             "probability": probability
         }, res => {
             props.setData(res.data);
-        }, "generate graph");
+        }, "Generate graph");
     }
 
-    const getVertexCover = (path: string) => {
+    const getVertexCover = (path: string, name: string) => {
         props.doFetch(path, "POST", {
             graph: props.data,
             depth: props.coverDepth,
@@ -55,7 +55,7 @@ export default function (props: {
             } else {
                 setVertexCoverTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
             }
-        }, "vertex cover search");
+        }, name);
     }
 
     const getKernelization = (graph?: {}) => {
@@ -202,7 +202,7 @@ export default function (props: {
                         <ButtonGroup>
                             <Button
                                 onClick={() => {
-                                    getVertexCover('/vertex-cover')
+                                    getVertexCover('/vertex-cover', "Brute force vertex cover")
                                 }}
                             >Brute force search</Button>
                         </ButtonGroup>
@@ -211,7 +211,7 @@ export default function (props: {
                         <ButtonGroup>
                             <Button
                                 onClick={() => {
-                                    getVertexCover('/vertex-cover-kernelized')
+                                    getVertexCover('/vertex-cover-kernelized', "Brute force vertex cover with kernelization")
                                 }}
                             >Brute force search with kernelization</Button>
                         </ButtonGroup>
