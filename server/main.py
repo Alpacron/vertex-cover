@@ -78,6 +78,12 @@ def vertex_cover(c: CoverItem):
     return reduction_graph.vertex_cover_brute(c.k, c.depth, best=reduction[1])[0]
 
 
+@app.post("/vertex-cover-approximation")
+def vertex_cover(c: CoverItem):
+    graph = Graph(c.graph)
+    return graph.approximation()
+
+
 @app.put("/increase-pendants")
 def increase_pendants(g: UpdateItem):
     graph = Graph(g.graph)

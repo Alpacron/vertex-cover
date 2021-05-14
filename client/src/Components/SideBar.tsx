@@ -216,6 +216,15 @@ export default function (props: {
                             >Brute force search with kernelization</Button>
                         </ButtonGroup>
                         <p style={{marginTop: "10px"}}>{vertexCoverKernelizedTime > 0 ? "Vertex cover took: " + vertexCoverKernelizedTime + " seconds" : "Brute force with kernelization has not been run yet."}</p>
+                        <H6 style={{color: "#137CBD"}}>Approximation vertex cover</H6>
+                        <ButtonGroup>
+                            <Button
+                                onClick={() => {
+                                    getVertexCover('/vertex-cover-approximation', "Approximation vertex cover")
+                                }}
+                            >Approximation vertex cover</Button>
+                        </ButtonGroup>
+                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 ? "Approximation of vertex cover took: " + vertexCoverTime + " seconds" : "Approximation has not been run yet."}</p>
                     </Collapse>
                 </div>
                 <div style={{
