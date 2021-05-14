@@ -14,13 +14,8 @@ export default function (props: {
         }, "Get adjacency matrix");
     }
 
-    const redirectToAPI = () => {
-        window.location.href = process.env.REACT_APP_SERVER_URL + "/docs";
-    }
-
     const menu = (
         <Menu>
-            <MenuItem icon="code" text="API Documentation" onClick={redirectToAPI}/>
             <MenuItem icon="graph" text="Copy adjacency matrix to clipboard" onClick={getAdjMatrix}/>
         </Menu>
     );
