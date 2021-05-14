@@ -356,3 +356,20 @@ class Graph:
             return {}, None
 
         return self.graph, covered
+
+    def approximation(self):
+        # Initialize the empty cover.
+        cover = []
+        edges = self.edges()
+
+        # Consider a set of all edges in a graph.
+        while edges:
+            # Pick an arbitrary edges (u, v) from that set and add both u and v to the cover.
+            u, v = random.choice(edges)
+            cover.append(u)
+            cover.append(v)
+            # Remove all edges from that set that are incident on u or v.
+            edges = [e for e in edges if e[0] is not u and e[0] is not v and e[1] is not u and e[1] is not v]
+
+        # Return the result
+        return cover
