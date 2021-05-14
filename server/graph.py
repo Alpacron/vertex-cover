@@ -352,7 +352,7 @@ class Graph:
         # greater than k, each remaining vertex can only cover at most k edges and a set of k vertices could only
         # cover at most k^2 edges. In this case, the instance may be replaced by an instance with two vertices,
         # one edge, and k = 0, which also has no solution.
-        if len(self.edges()) > k ** 2 and k is not -1:
+        if len(self.edges()) > k ** 2 and k != -1:
             return {}, None
 
         return self.graph, covered
