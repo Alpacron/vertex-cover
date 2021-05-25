@@ -15,6 +15,7 @@ export default function (props: {
 }) {
     const {width} = useWindowDimensions();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
+    const [vertexCoverApproximationTime, setVertexCoverApproximationTime] = useState<number>(0);
     const [vertexCoverKernelizedTime, setVertexCoverKernelizedTime] = useState<number>(0);
     const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
@@ -50,10 +51,13 @@ export default function (props: {
             k: coverK
         }, res => {
             props.setCover({depth: props.coverDepth, vertices: res.data})
+            const time = (new Date().getTime() - res.query.dateTime.getTime()) / 1000;
             if (path.includes("kernelized")) {
-                setVertexCoverKernelizedTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000)
+                setVertexCoverKernelizedTime(time)
+            } else if (path.includes("approximation")) {
+                setVertexCoverApproximationTime(time)
             } else {
-                setVertexCoverTime((new Date().getTime() - res.query.dateTime.getTime()) / 1000);
+                setVertexCoverTime(time);
             }
         }, name);
     }
@@ -224,7 +228,7 @@ export default function (props: {
                                 }}
                             >Approximation vertex cover</Button>
                         </ButtonGroup>
-                        <p style={{marginTop: "10px"}}>{vertexCoverTime > 0 ? "Approximation of vertex cover took: " + vertexCoverTime + " seconds" : "Approximation has not been run yet."}</p>
+                        <p style={{marginTop: "10px"}}>{vertexCoverApproximationTime > 0 ? "Approximation of vertex cover took: " + vertexCoverApproximationTime + " seconds" : "Approximation has not been run yet."}</p>
                     </Collapse>
                 </div>
                 <div style={{
