@@ -1,5 +1,4 @@
-import {useEffect, useState} from "react";
-
+import { useEffect, useState } from 'react';
 
 export default function () {
     const [dateTime, setDateTime] = useState<Date>(new Date());
@@ -8,7 +7,7 @@ export default function () {
         const id = setInterval(() => setDateTime(new Date()), 1000);
         return () => {
             clearInterval(id);
-        }
+        };
     }, []);
 
     return dateTime;

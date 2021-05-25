@@ -3,7 +3,7 @@ export default function (element: HTMLPreElement) {
     let doc = element.ownerDocument;
     let win = doc.defaultView;
     let sel;
-    if (win != null && typeof win.getSelection != "undefined") {
+    if (win != null && typeof win.getSelection != 'undefined') {
         sel = win.getSelection();
         if (sel != null && sel.rangeCount > 0) {
             let range = sel.getRangeAt(0);

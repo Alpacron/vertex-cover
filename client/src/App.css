@@ -36,9 +36,26 @@ textarea {
     resize: none;
 }
 
-pre { caret-color: black; }
-.string { color: #D99E0B; }
-.number { color: #15B371; }
-.boolean { color: #137CBD; }
-.null { color: #A854A8; }
-.key { color: #DB3737; }
+pre {
+    caret-color: black;
+}
+
+.string {
+    color: #D99E0B;
+}
+
+.number {
+    color: #15B371;
+}
+
+.boolean {
+    color: #137CBD;
+}
+
+.null {
+    color: #A854A8;
+}
+
+.key {
+    color: #DB3737;
+}
