@@ -1,13 +1,13 @@
-export default function (element: HTMLPreElement) {
+export function getCaretPosition(element: HTMLPreElement): number {
     let caretOffset = 0;
-    let doc = element.ownerDocument;
-    let win = doc.defaultView;
+    const doc = element.ownerDocument;
+    const win = doc.defaultView;
     let sel;
     if (win != null && typeof win.getSelection != 'undefined') {
         sel = win.getSelection();
         if (sel != null && sel.rangeCount > 0) {
-            let range = sel.getRangeAt(0);
-            let preCaretRange = range.cloneRange();
+            const range = sel.getRangeAt(0);
+            const preCaretRange = range.cloneRange();
             preCaretRange.selectNodeContents(element);
             preCaretRange.setEnd(range.endContainer, range.endOffset);
             caretOffset = preCaretRange.toString().length;

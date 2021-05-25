@@ -2,8 +2,8 @@ import React from 'react';
 import { Alignment, Button, Menu, MenuItem, Navbar, Popover } from '@blueprintjs/core';
 import { PromiseWithCancel } from '../Interfaces/PromiseWithCancel';
 
-export default function (props: {
-    data: {};
+export function NavBar(props: {
+    data: Record<string, unknown>;
     doFetch: (
         path: string,
         method: string,
@@ -11,7 +11,7 @@ export default function (props: {
         resolve?: ((res: any) => void) | undefined,
         name?: string | undefined
     ) => PromiseWithCancel<any> | undefined;
-}) {
+}): JSX.Element {
     const getAdjMatrix = () => {
         props.doFetch(
             '/get-matrix',

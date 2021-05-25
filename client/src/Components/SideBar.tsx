@@ -1,13 +1,13 @@
-import Popup from './Popup';
+import { Popup } from './Popup';
 import { Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput } from '@blueprintjs/core';
-import Clock from './Clock';
+import { Clock } from './Clock';
 import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import useWindowDimensions from '../Util/useWindowDimensions';
+import { useWindowDimensions } from '../Util/useWindowDimensions';
 import { PromiseWithCancel } from '../Interfaces/PromiseWithCancel';
 
-export default function (props: {
-    data: {};
-    setData: Dispatch<SetStateAction<{}>>;
+export function SideBar(props: {
+    data: Record<string, unknown>;
+    setData: Dispatch<SetStateAction<Record<string, unknown>>>;
     cover: { depth: number; vertices: number[] };
     setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[] }>>;
     kernel: { isolated: number[]; pendant: number[]; tops: number[] };
@@ -22,7 +22,7 @@ export default function (props: {
         name?: string | undefined
     ) => PromiseWithCancel<any> | undefined;
     query: PromiseWithCancel<any> | undefined;
-}) {
+}): JSX.Element {
     const { width } = useWindowDimensions();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
     const [vertexCoverApproximationTime, setVertexCoverApproximationTime] = useState<number>(0);
@@ -36,14 +36,18 @@ export default function (props: {
     const [vertices, setVertices] = useState<number>(10);
     const [probability, setProbability] = useState<number>(0.5);
 
-    useEffect(() => {
-        props.setData({ '0': [1], '1': [0] });
-    }, []);
+    const setData = props.setData;
+    const setKernel = props.setKernel;
+    const setCover = props.setCover;
 
     useEffect(() => {
-        props.setKernel({ isolated: [], pendant: [], tops: [] });
-        props.setCover({ depth: props.coverDepth, vertices: [] });
-    }, [coverK, props.coverDepth, vertexDegree]);
+        setData({ '0': [1], '1': [0] });
+    }, [setData]);
+
+    useEffect(() => {
+        setKernel({ isolated: [], pendant: [], tops: [] });
+        setCover({ depth: props.coverDepth, vertices: [] });
+    }, [props.coverDepth, setCover, setKernel]);
 
     const generateGraph = () => {
         props.doFetch(
@@ -84,7 +88,7 @@ export default function (props: {
         );
     };
 
-    const getKernelization = (graph?: {}) => {
+    const getKernelization = (graph?: Record<string, unknown>) => {
         props.doFetch(
             '/kernelization',
             'POST',

@@ -1,16 +1,15 @@
-export default function (element: any, caretOffset: number) {
+export function setCaretPosition(element: any, caretOffset: number): void {
     let count = 0;
 
-    for (let n = 0; n < element.childNodes.length; n++) {
+    for (const n of element.childNodes) {
         let len = 0;
-        if (element.childNodes[n].innerText != undefined) len = element.childNodes[n].innerText.length;
-        else len = element.childNodes[n].length;
+        if (n.innerText != undefined) len = n.innerText.length;
+        else len = n.length;
         if (count + len >= caretOffset) {
-            let range = document.createRange();
-            let sel = window.getSelection();
-            if (element.childNodes[n].innerText != undefined)
-                range.setStart(element.childNodes[n].childNodes[0], caretOffset - count);
-            else range.setStart(element.childNodes[n], caretOffset - count);
+            const range = document.createRange();
+            const sel = window.getSelection();
+            if (n.innerText != undefined) range.setStart(n.childNodes[0], caretOffset - count);
+            else range.setStart(n, caretOffset - count);
             range.collapse(true);
             if (sel != null) {
                 sel.removeAllRanges();

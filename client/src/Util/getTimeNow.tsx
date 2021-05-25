@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-export default function () {
+export function GetTimeNow(): Date {
     const [dateTime, setDateTime] = useState<Date>(new Date());
 
     useEffect(() => {

@@ -1,20 +1,20 @@
-import getCaretPosition from './getCaretPosition';
-import setCaretPosition from './setCaretPosition';
+import { getCaretPosition } from './getCaretPosition';
+import { setCaretPosition } from './setCaretPosition';
 import { Dispatch, SetStateAction } from 'react';
 
-export default function (element: any, e: any, setPasted: Dispatch<SetStateAction<boolean>>) {
+export function betterKeyDownActions(element: any, e: any, setPasted: Dispatch<SetStateAction<boolean>>): void {
     if (element != null) {
         let pos = getCaretPosition(element);
         if (e.key === 'Enter') {
             document.execCommand('insertHTML', false, '\n');
             pos = getCaretPosition(element);
             const isSurrounded =
-                /^[\[{]$/g.test(element.innerText.charAt(pos - 2)) && /^[\]}]$/g.test(element.innerText.charAt(pos));
+                /^[[{]$/g.test(element.innerText.charAt(pos - 2)) && /^[\]}]$/g.test(element.innerText.charAt(pos));
             // Count every unfinished bracket before current position and add whitespaces
             let count = 0;
             for (let i = 0; i < element.innerText.length && i < pos; i++) {
-                let c = element.innerText.charAt(i);
-                if (/[\[{]/g.test(c)) count++;
+                const c = element.innerText.charAt(i);
+                if (/[[{]/g.test(c)) count++;
                 else if (/[\]}]/g.test(c)) count--;
             }
             if (count > 0) document.execCommand('insertHTML', false, '    '.repeat(count));
@@ -25,7 +25,7 @@ export default function (element: any, e: any, setPasted: Dispatch<SetStateActio
                 setCaretPosition(element, pos);
             }
             e.preventDefault();
-        } else if (/^[\[{"]$/g.test(e.key)) {
+        } else if (/^[[{"]$/g.test(e.key)) {
             let f = '}';
             if (e.key === '[') f = ']';
             else if (e.key === '"') f = '"';

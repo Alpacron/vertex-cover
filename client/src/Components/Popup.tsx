@@ -1,6 +1,6 @@
 import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 
-export default function (props: {
+export function Popup(props: {
     open: boolean;
     transitionFade?: string;
     x?: number;
@@ -9,10 +9,12 @@ export default function (props: {
     centerY?: boolean;
     style?: CSSProperties;
     children?: any;
-}) {
+}): JSX.Element {
     const self = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-    const [children, setChildren] = useState<any>();
+    const [children, setChildren] = useState<never>();
+
+    const open = props.open;
 
     useEffect(() => {
         if (self.current) {
@@ -21,8 +23,8 @@ export default function (props: {
                 height: self.current.offsetHeight
             });
         }
-        if (props.open) setChildren(props.children);
-    }, [props.open, props.children]);
+        if (open) setChildren(props.children);
+    }, [open, props.children]);
 
     return (
         <div

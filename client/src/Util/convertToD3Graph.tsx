@@ -22,13 +22,13 @@ function getCover(
     return covered;
 }
 
-export default function (
+export function convertToD3Graph(
     graph: any,
     cover: { depth: number; vertices: number[] },
     kernel: { isolated: number[]; pendant: number[]; tops: number[] }
 ): GraphData<any, any> {
-    let nodes: { id: number; color: string }[] = [];
-    let links: { source: number; target: number; color: string }[] = [];
+    const nodes: { id: number; color: string }[] = [];
+    const links: { source: number; target: number; color: string }[] = [];
     let covered: { source: number; target: number }[] = [];
     if (cover.vertices.length > 0) {
         cover.vertices.forEach((c) => (covered = getCover(graph, c, cover.depth, 0, covered)));
@@ -54,7 +54,7 @@ export default function (
                 ).length === 0
             ) {
                 // check if it is covered
-                let isCovered =
+                const isCovered =
                     covered.filter((c) => (c.source === +v && c.target === l) || (c.source === l && c.target === +v))
                         .length > 0;
                 // add link to links

@@ -1,21 +1,21 @@
 import React, { Dispatch, RefObject, SetStateAction, useState } from 'react';
 import { PromiseWithCancel } from '../Interfaces/PromiseWithCancel';
-import SideBar from './SideBar';
+import { SideBar } from './SideBar';
 import { Spinner } from '@blueprintjs/core';
-import CodeViewer from './CodeViewer';
-import NavBar from './NavBar';
+import { CodeViewer } from './CodeViewer';
+import { NavBar } from './NavBar';
 
-export default function (props: {
+export function MainPage(props: {
     children: any;
     graphBoundingRef: RefObject<HTMLDivElement>;
     graphRef: RefObject<any>;
-    data: {};
-    setData: Dispatch<SetStateAction<{}>>;
+    data: Record<string, unknown>;
+    setData: Dispatch<SetStateAction<Record<string, unknown>>>;
     cover: { depth: number; vertices: number[] };
     setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[] }>>;
     kernel: { isolated: number[]; pendant: number[]; tops: number[] };
     setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[] }>>;
-}) {
+}): JSX.Element {
     const server = process.env.REACT_APP_SERVER_URL;
     const [coverDepth, setCoverDepth] = useState<number>(1);
     const [query, setQuery] = useState<PromiseWithCancel<any> | undefined>();
@@ -24,6 +24,7 @@ export default function (props: {
         if (!query) {
             const controller = new AbortController();
             const signal = controller.signal;
+            // eslint-disable-next-line no-async-promise-executor
             const promise = new Promise(async () => {
                 try {
                     const response = await fetch(server + path, {

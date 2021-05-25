@@ -1,4 +1,4 @@
-export default function (json: any) {
+export function prettifyJSON(json: any): any {
     if (typeof json != 'string') {
         json = JSON.stringify(
             json,
@@ -15,7 +15,7 @@ export default function (json: any) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         if (!json.endsWith('\n')) json += '\n';
         json = json.replace(
-            /"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+            /"(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?/g,
             function (match: any) {
                 let cls = 'number';
                 if (/^"/.test(match)) {

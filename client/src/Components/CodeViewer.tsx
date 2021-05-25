@@ -1,25 +1,25 @@
 import { Button, ButtonGroup, Card } from '@blueprintjs/core';
-import getCaretPosition from '../Util/getCaretPosition';
-import setCaretPosition from '../Util/setCaretPosition';
+import { getCaretPosition } from '../Util/getCaretPosition';
 import React, { Dispatch, RefObject, SetStateAction, useEffect, useRef, useState } from 'react';
+import { prettifyJSON } from '../Util/prettifyJSON';
+import { betterKeyDownActions } from '../Util/betterKeyDownActions';
+import { setCaretPosition } from '../Util/setCaretPosition';
 import { PromiseWithCancel } from '../Interfaces/PromiseWithCancel';
-import prettifyJSON from '../Util/prettifyJSON';
-import betterKeyDownActions from '../Util/betterKeyDownActions';
 
-export default function (props: {
-    data: {};
-    setData: Dispatch<SetStateAction<{}>>;
+export function CodeViewer(props: {
+    data: Record<string, unknown>;
+    setData: Dispatch<SetStateAction<Record<string, unknown>>>;
     graphElement: RefObject<any>;
     graphBoundingRef: RefObject<HTMLDivElement>;
-    query: PromiseWithCancel<any> | undefined;
     setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[] }>>;
     setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[] }>>;
     coverDepth: number;
-}) {
+    query: PromiseWithCancel<any> | undefined;
+}): JSX.Element {
     const [pasted, setPasted] = useState<boolean>(false);
     const graphDiv = useRef<HTMLPreElement>(null);
 
-    const setGraphText = (json: {} | string) => {
+    const setGraphText = (json: Record<string, unknown> | string) => {
         if (graphDiv.current != null) {
             graphDiv.current.innerHTML = prettifyJSON(json);
         }
@@ -60,7 +60,7 @@ export default function (props: {
                                     graphDiv.current.innerText
                                 )
                             ) {
-                                let json = JSON.parse(graphDiv.current.innerText);
+                                const json = JSON.parse(graphDiv.current.innerText);
                                 // Checking if every connection goes both ways, else add connection
                                 Object.keys(json).forEach((key: string) => {
                                     // Sort and remove duplicates
@@ -105,7 +105,7 @@ export default function (props: {
                 onKeyDown={(e) => betterKeyDownActions(graphDiv.current, e, setPasted)}
                 onInput={() => {
                     if (graphDiv.current != null) {
-                        let pos = getCaretPosition(graphDiv.current);
+                        const pos = getCaretPosition(graphDiv.current);
                         if (pasted) {
                             console.log('a');
                             setPasted(false);
