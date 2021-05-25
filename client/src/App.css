@@ -41,21 +41,21 @@ pre {
 }
 
 .string {
-    color: #D99E0B;
+    color: #d99e0b;
 }
 
 .number {
-    color: #15B371;
+    color: #15b371;
 }
 
 .boolean {
-    color: #137CBD;
+    color: #137cbd;
 }
 
 .null {
-    color: #A854A8;
+    color: #a854a8;
 }
 
 .key {
-    color: #DB3737;
+    color: #db3737;
 }
