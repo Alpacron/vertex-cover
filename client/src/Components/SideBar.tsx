@@ -26,6 +26,7 @@ export function SideBar(props: {
     const { width } = useWindowDimensions();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
     const [vertexCoverApproximationTime, setVertexCoverApproximationTime] = useState<number>(0);
+    const [vertexCoverApproximationTreeTime, setVertexCoverApproximationTreeTime] = useState<number>(0);
     const [vertexCoverKernelizedTime, setVertexCoverKernelizedTime] = useState<number>(0);
     const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
@@ -35,6 +36,7 @@ export function SideBar(props: {
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
     const [nodes, setNodes] = useState<number>(3);
+    const [maxChildren, setMaxChildren] = useState<number>(2);
     const [generateTreeOpen, setGenerateTreeOpen] = useState<boolean>(false);
     const [probability, setProbability] = useState<number>(0.5);
 
@@ -71,7 +73,8 @@ export function SideBar(props: {
             '/generate-tree',
             'POST',
             {
-                nodes: nodes
+                nodes: nodes,
+                max_children: maxChildren
             },
             (res) => {
                 props.setData(res.data);
@@ -95,6 +98,8 @@ export function SideBar(props: {
                     setVertexCoverKernelizedTime(time);
                 } else if (path.includes('approximation')) {
                     setVertexCoverApproximationTime(time);
+                } else if (path.includes('tree')) {
+                    setVertexCoverApproximationTreeTime(time);
                 } else {
                     setVertexCoverTime(time);
                 }
@@ -214,9 +219,35 @@ export function SideBar(props: {
                         <FormGroup label="Number of nodes" labelFor="nodes">
                             <NumericInput min={1} width={5} id="nodes" value={nodes} onValueChange={setNodes} />
                         </FormGroup>
+                        <FormGroup label="Number of children (maximum)" labelFor="maxChildren">
+                            <NumericInput
+                                min={1}
+                                width={5}
+                                id="maxChildren"
+                                value={maxChildren}
+                                onValueChange={setMaxChildren}
+                            />
+                        </FormGroup>
                         <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
                             <Button onClick={generateTree}>Generate tree</Button>
                         </ButtonGroup>
+                        <H6 style={{ color: '#137CBD' }}>Approximation vertex cover for a tree</H6>
+                        <ButtonGroup>
+                            <Button
+                                onClick={() => {
+                                    getVertexCover('/tree-cover', 'Approximation vertex cover for a tree');
+                                }}
+                            >
+                                Approximation vertex cover for a tree
+                            </Button>
+                        </ButtonGroup>
+                        <p style={{ marginTop: '10px' }}>
+                            {vertexCoverApproximationTreeTime > 0
+                                ? 'Approximation of vertex cover for a tree took: ' +
+                                  vertexCoverApproximationTreeTime +
+                                  ' seconds'
+                                : 'Approximation has not been run yet.'}
+                        </p>
                     </Collapse>
                 </div>
                 <div
