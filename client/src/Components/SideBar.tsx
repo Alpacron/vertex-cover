@@ -34,6 +34,8 @@ export function SideBar(props: {
     const [coverK, setCoverK] = useState<number>(-1);
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
+    const [nodes, setNodes] = useState<number>(3);
+    const [generateTreeOpen, setGenerateTreeOpen] = useState<boolean>(false);
     const [probability, setProbability] = useState<number>(0.5);
 
     const setData = props.setData;
@@ -61,6 +63,19 @@ export function SideBar(props: {
                 props.setData(res.data);
             },
             'Generate graph'
+        );
+    };
+
+    const generateTree = () => {
+        props.doFetch(
+            '/generate-tree',
+            'POST',
+            {
+                nodes: nodes
+            },
+            (res) => {
+                props.setData(res.data);
+            }
         );
     };
 
@@ -182,6 +197,25 @@ export function SideBar(props: {
                         </FormGroup>
                         <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
                             <Button onClick={generateGraph}>Generate graph</Button>
+                        </ButtonGroup>
+                    </Collapse>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <H6>
+                        Binary tree
+                        <Button
+                            minimal
+                            small
+                            icon={generateTreeOpen ? 'chevron-up' : 'chevron-down'}
+                            onClick={() => setGenerateTreeOpen(!generateTreeOpen)}
+                        />
+                    </H6>
+                    <Collapse isOpen={generateTreeOpen} keepChildrenMounted>
+                        <FormGroup label="Number of nodes" labelFor="nodes">
+                            <NumericInput min={1} width={5} id="nodes" value={nodes} onValueChange={setNodes} />
+                        </FormGroup>
+                        <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
+                            <Button onClick={generateTree}>Generate tree</Button>
                         </ButtonGroup>
                     </Collapse>
                 </div>
