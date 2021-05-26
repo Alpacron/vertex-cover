@@ -1,8 +1,5 @@
-import random
 import json
-
-from node import Node
-from tree import Tree
+import random
 
 
 class Graph:
@@ -20,30 +17,6 @@ class Graph:
 
     def __str__(self):
         return json.dumps(self.graph)
-
-    def from_tree(self, tree: Tree):
-        if tree.is_empty():
-            return
-
-        self.from_node(tree.root)
-
-    def from_node(self, root: Node):
-        if root is None:
-            return
-
-        if root.data not in self.vertices():
-            self.add_vertex(root.data)
-
-        if root.left is not None:
-            self.add_vertex(root.left.data)
-            self.add_edge(root.data, root.left.data)
-
-        if root.right is not None:
-            self.add_vertex(root.right.data)
-            self.add_edge(root.data, root.right.data)
-
-        self.from_node(root.left)
-        self.from_node(root.right)
 
     def to_adj_matrix(self):
         keys = sorted(self.graph.keys())
@@ -123,9 +96,10 @@ class Graph:
         self.graph[str(v)].remove(u)
 
     def remove_all_edges(self, v: int):
-        edges = list(self.graph[str(v)])
-        for e in edges:
-            self.remove_edge(e, v)
+        if v in self.vertices():
+            edges = list(self.graph[str(v)])
+            for e in edges:
+                self.remove_edge(e, v)
 
     def is_connected(self, u: int, v: int):
         """
@@ -399,4 +373,29 @@ class Graph:
             edges = [e for e in edges if e[0] is not u and e[0] is not v and e[1] is not u and e[1] is not v]
 
         # Return the result
+        return cover
+
+    def tree_approximation(self):
+        # Initialize the empty cover
+        cover = []
+        leaves = [v for v in self.vertices() if self.is_pendant(v)]
+        print("leaves", leaves)
+        parents = [node for parents in [self.graph[str(leave)] for leave in leaves] for node in parents]
+        print("parents", parents)
+
+        # While there exists leaves in the graph.
+        while leaves:
+            # Add all parents to the cover.
+            for parent in parents:
+                cover.append(parent)
+
+            # Remove all leaves and their parents from the graph.
+            for node in leaves + parents:
+                self.remove_all_edges(node)
+                self.remove_vertex(node)
+
+            # Recalculate leaves and parents
+            leaves = [node for node in self.vertices() if self.is_pendant(node)]
+            parents = [node for parents in [self.graph[str(leave)] for leave in leaves] for node in parents]
+
         return cover
