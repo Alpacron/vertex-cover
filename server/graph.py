@@ -1,6 +1,9 @@
 import random
 import json
 
+from node import Node
+from tree import Tree
+
 
 class Graph:
     """
@@ -17,6 +20,30 @@ class Graph:
 
     def __str__(self):
         return json.dumps(self.graph)
+
+    def from_tree(self, tree: Tree):
+        if tree.is_empty():
+            return
+
+        self.from_node(tree.root)
+
+    def from_node(self, root: Node):
+        if root is None:
+            return
+
+        if root.data not in self.vertices():
+            self.add_vertex(root.data)
+
+        if root.left is not None:
+            self.add_vertex(root.left.data)
+            self.add_edge(root.data, root.left.data)
+
+        if root.right is not None:
+            self.add_vertex(root.right.data)
+            self.add_edge(root.data, root.right.data)
+
+        self.from_node(root.left)
+        self.from_node(root.right)
 
     def to_adj_matrix(self):
         keys = sorted(self.graph.keys())
