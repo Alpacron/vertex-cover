@@ -31,15 +31,14 @@ def generate(item: GenerateItem):
 
 class GenerateTreeItem(BaseModel):
     nodes: int
+    max_children: int
 
 
 @app.post("/generate-tree")
 def generate_tree(item: GenerateTreeItem):
     tree = Tree()
-    tree.create_tree(item.nodes)
-    graph = Graph()
-    graph.from_tree(tree)
-    return graph.graph
+    tree.create_tree(item.nodes, item.max_children)
+    return tree.graph.graph
 
 
 class UpdateItem(BaseModel):
@@ -77,6 +76,12 @@ class CoverItem(BaseModel):
     graph: Any
     depth: int
     k: int
+
+
+@app.post("/tree-cover")
+def tree_cover(c: CoverItem):
+    graph = Graph(c.graph)
+    return graph.tree_approximation()
 
 
 @app.post("/vertex-cover")
