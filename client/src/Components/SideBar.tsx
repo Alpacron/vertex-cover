@@ -22,6 +22,10 @@ export function SideBar(props: {
         name?: string | undefined
     ) => PromiseWithCancel<any> | undefined;
     query: PromiseWithCancel<any> | undefined;
+    maxChildren: number;
+    setMaxChildren: Dispatch<SetStateAction<number>>;
+    isTree: boolean;
+    setIsTree: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
     const { width } = useWindowDimensions();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
@@ -36,7 +40,6 @@ export function SideBar(props: {
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
     const [nodes, setNodes] = useState<number>(3);
-    const [maxChildren, setMaxChildren] = useState<number>(2);
     const [generateTreeOpen, setGenerateTreeOpen] = useState<boolean>(false);
     const [probability, setProbability] = useState<number>(0.5);
 
@@ -66,6 +69,7 @@ export function SideBar(props: {
             },
             'Generate graph'
         );
+        props.setIsTree(false);
     };
 
     const generateTree = () => {
@@ -74,12 +78,13 @@ export function SideBar(props: {
             'POST',
             {
                 nodes: nodes,
-                max_children: maxChildren
+                max_children: props.maxChildren
             },
             (res) => {
                 props.setData(res.data);
             }
         );
+        props.setIsTree(true);
     };
 
     const getVertexCover = (path: string, name: string) => {
@@ -224,8 +229,8 @@ export function SideBar(props: {
                                 min={1}
                                 width={5}
                                 id="maxChildren"
-                                value={maxChildren}
-                                onValueChange={setMaxChildren}
+                                value={props.maxChildren}
+                                onValueChange={props.setMaxChildren}
                             />
                         </FormGroup>
                         <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>

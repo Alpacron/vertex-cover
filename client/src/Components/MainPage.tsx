@@ -15,6 +15,10 @@ export function MainPage(props: {
     setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[] }>>;
     kernel: { isolated: number[]; pendant: number[]; tops: number[] };
     setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[] }>>;
+    maxChildren: number;
+    setMaxChildren: Dispatch<SetStateAction<number>>;
+    isTree: boolean;
+    setIsTree: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
     const server = process.env.REACT_APP_SERVER_URL;
     const [coverDepth, setCoverDepth] = useState<number>(1);
@@ -96,6 +100,10 @@ export function MainPage(props: {
                     setCoverDepth={setCoverDepth}
                     doFetch={doFetch}
                     query={query}
+                    maxChildren={props.maxChildren}
+                    setMaxChildren={props.setMaxChildren}
+                    isTree={props.isTree}
+                    setIsTree={props.setIsTree}
                 />
             </div>
         </>
