@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from './Util/useWindowDimensions';
 import { convertToD3Graph } from './Util/convertToD3Graph';
 import './App.css';
@@ -22,27 +22,7 @@ export function App(): JSX.Element {
     const [maxChildren, setMaxChildren] = useState<number>(2);
     const [isTree, setIsTree] = useState<boolean>(false);
 
-    useEffect(() => {
-        centerNodes();
-        if (isTree) {
-            arrangeTree();
-        }
-    }, [width, height, data, setData]);
-
-    useEffect(() => {
-        setData({ '0': [1], '1': [0] });
-    }, []);
-
-    const onClickNode = function (nodeId: string) {
-        if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
-            const c = Object.assign([], cover.vertices);
-            if (c.indexOf(+nodeId, 0) > -1) c.splice(cover.vertices.indexOf(+nodeId, 0), 1);
-            else c.push(+nodeId);
-            setCover({ depth: cover.depth, vertices: c });
-        }
-    };
-
-    function arrangeTree() {
+    const arrangeTree = useCallback(() => {
         if (
             isTree &&
             graphRef.current != null &&
@@ -67,7 +47,28 @@ export function App(): JSX.Element {
                 }
             });
         }
-    }
+    }, [isTree, maxChildren]);
+
+    useEffect(() => {
+        centerNodes();
+        if (isTree) {
+            arrangeTree();
+        }
+    }, [width, height, data, setData, isTree, arrangeTree]);
+
+    useEffect(() => {
+        setData({ '0': [1], '1': [0] });
+    }, []);
+
+    const onClickNode = function(nodeId: string) {
+        if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
+            const c = Object.assign([], cover.vertices);
+            if (c.indexOf(+nodeId, 0) > -1) c.splice(cover.vertices.indexOf(+nodeId, 0), 1);
+            else c.push(+nodeId);
+            setCover({ depth: cover.depth, vertices: c });
+        }
+    };
+
 
     function centerNodes() {
         if (
@@ -116,9 +117,9 @@ export function App(): JSX.Element {
             isTree={isTree}
             setIsTree={setIsTree}
         >
-            <div className="container__graph-area" ref={graphBoundingRef}>
+            <div className='container__graph-area' ref={graphBoundingRef}>
                 <Graph
-                    id="graph-id"
+                    id='graph-id'
                     ref={graphRef}
                     data={convertToD3Graph(data, cover, kernel)}
                     onClickNode={onClickNode}
