@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from './Util/useWindowDimensions';
 import { convertToD3Graph } from './Util/convertToD3Graph';
 import './App.css';
@@ -19,16 +19,48 @@ export function App(): JSX.Element {
         pendant: [],
         tops: []
     });
+    const [maxChildren, setMaxChildren] = useState<number>(2);
+    const [isTree, setIsTree] = useState<boolean>(false);
+
+    const arrangeTree = useCallback(() => {
+        if (
+            isTree &&
+            graphRef.current != null &&
+            graphRef.current.state.nodes[0] !== undefined &&
+            graphBoundingRef.current != null
+        ) {
+            let highestY = 0;
+            Object.keys(graphRef.current.state.nodes).forEach((node) => {
+                if (graphRef.current != null) {
+                    const y = graphRef.current.state.nodes[node].y;
+
+                    if (y > highestY) {
+                        highestY = y;
+                    }
+                }
+            });
+
+            Object.keys(graphRef.current.state.nodes).forEach((node: any) => {
+                if (graphRef.current != null && graphBoundingRef.current != null) {
+                    graphRef.current.state.nodes[node].y =
+                        highestY + (250 * maxChildren) * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
+                }
+            });
+        }
+    }, [isTree, maxChildren]);
 
     useEffect(() => {
         centerNodes();
-    }, [width, height]);
+        if (isTree) {
+            arrangeTree();
+        }
+    }, [width, height, data, setData, arrangeTree, isTree]);
 
     useEffect(() => {
         setData({ '0': [1], '1': [0] });
     }, []);
 
-    const onClickNode = function (nodeId: string) {
+    const onClickNode = function(nodeId: string) {
         if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
             const c = Object.assign([], cover.vertices);
             if (c.indexOf(+nodeId, 0) > -1) c.splice(cover.vertices.indexOf(+nodeId, 0), 1);
@@ -36,6 +68,7 @@ export function App(): JSX.Element {
             setCover({ depth: cover.depth, vertices: c });
         }
     };
+
 
     function centerNodes() {
         if (
@@ -46,11 +79,18 @@ export function App(): JSX.Element {
             const nodeCount = Object.keys(graphRef.current.state.nodes).length;
             let sumX = 0;
             let sumY = 0;
+            let highestY = 0;
             const boundingBox = graphBoundingRef.current.getBoundingClientRect();
             Object.keys(graphRef.current.state.nodes).forEach((node) => {
                 if (graphRef.current != null) {
+                    const y = graphRef.current.state.nodes[node].y;
+
                     sumX += graphRef.current.state.nodes[node].x;
-                    sumY += graphRef.current.state.nodes[node].y;
+                    sumY += y;
+
+                    if (y > highestY) {
+                        highestY = y;
+                    }
                 }
             });
             Object.keys(graphRef.current.state.nodes).forEach((node: any) => {
@@ -72,10 +112,14 @@ export function App(): JSX.Element {
             setCover={setCover}
             kernel={kernel}
             setKernel={setKernel}
+            maxChildren={maxChildren}
+            setMaxChildren={setMaxChildren}
+            isTree={isTree}
+            setIsTree={setIsTree}
         >
-            <div className="container__graph-area" ref={graphBoundingRef}>
+            <div className='container__graph-area' ref={graphBoundingRef}>
                 <Graph
-                    id="graph-id"
+                    id='graph-id'
                     ref={graphRef}
                     data={convertToD3Graph(data, cover, kernel)}
                     onClickNode={onClickNode}

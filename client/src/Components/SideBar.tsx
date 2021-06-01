@@ -22,10 +22,15 @@ export function SideBar(props: {
         name?: string | undefined
     ) => PromiseWithCancel<any> | undefined;
     query: PromiseWithCancel<any> | undefined;
+    maxChildren: number;
+    setMaxChildren: Dispatch<SetStateAction<number>>;
+    isTree: boolean;
+    setIsTree: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
     const { width } = useWindowDimensions();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
     const [vertexCoverApproximationTime, setVertexCoverApproximationTime] = useState<number>(0);
+    const [vertexCoverApproximationTreeTime, setVertexCoverApproximationTreeTime] = useState<number>(0);
     const [vertexCoverKernelizedTime, setVertexCoverKernelizedTime] = useState<number>(0);
     const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
@@ -34,6 +39,8 @@ export function SideBar(props: {
     const [coverK, setCoverK] = useState<number>(-1);
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
+    const [nodes, setNodes] = useState<number>(3);
+    const [generateTreeOpen, setGenerateTreeOpen] = useState<boolean>(false);
     const [probability, setProbability] = useState<number>(0.5);
 
     const setData = props.setData;
@@ -62,6 +69,22 @@ export function SideBar(props: {
             },
             'Generate graph'
         );
+        props.setIsTree(false);
+    };
+
+    const generateTree = () => {
+        props.doFetch(
+            '/generate-tree',
+            'POST',
+            {
+                nodes: nodes,
+                max_children: props.maxChildren
+            },
+            (res) => {
+                props.setData(res.data);
+            }
+        );
+        props.setIsTree(true);
     };
 
     const getVertexCover = (path: string, name: string) => {
@@ -80,6 +103,8 @@ export function SideBar(props: {
                     setVertexCoverKernelizedTime(time);
                 } else if (path.includes('approximation')) {
                     setVertexCoverApproximationTime(time);
+                } else if (path.includes('tree')) {
+                    setVertexCoverApproximationTreeTime(time);
                 } else {
                     setVertexCoverTime(time);
                 }
@@ -183,6 +208,51 @@ export function SideBar(props: {
                         <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
                             <Button onClick={generateGraph}>Generate graph</Button>
                         </ButtonGroup>
+                    </Collapse>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <H6>
+                        Tree
+                        <Button
+                            minimal
+                            small
+                            icon={generateTreeOpen ? 'chevron-up' : 'chevron-down'}
+                            onClick={() => setGenerateTreeOpen(!generateTreeOpen)}
+                        />
+                    </H6>
+                    <Collapse isOpen={generateTreeOpen} keepChildrenMounted>
+                        <FormGroup label="Number of nodes" labelFor="nodes">
+                            <NumericInput min={1} width={5} id="nodes" value={nodes} onValueChange={setNodes} />
+                        </FormGroup>
+                        <FormGroup label="Number of children (maximum)" labelFor="maxChildren">
+                            <NumericInput
+                                min={1}
+                                width={5}
+                                id="maxChildren"
+                                value={props.maxChildren}
+                                onValueChange={props.setMaxChildren}
+                            />
+                        </FormGroup>
+                        <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
+                            <Button onClick={generateTree}>Generate tree</Button>
+                        </ButtonGroup>
+                        <H6 style={{ color: '#137CBD' }}>Approximation vertex cover for a tree</H6>
+                        <ButtonGroup>
+                            <Button
+                                onClick={() => {
+                                    getVertexCover('/tree-cover', 'Approximation vertex cover for a tree');
+                                }}
+                            >
+                                Approximation vertex cover for a tree
+                            </Button>
+                        </ButtonGroup>
+                        <p style={{ marginTop: '10px' }}>
+                            {vertexCoverApproximationTreeTime > 0
+                                ? 'Approximation of vertex cover for a tree took: ' +
+                                  vertexCoverApproximationTreeTime +
+                                  ' seconds'
+                                : 'Approximation has not been run yet.'}
+                        </p>
                     </Collapse>
                 </div>
                 <div

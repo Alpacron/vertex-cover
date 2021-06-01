@@ -6,6 +6,8 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Any
 
+from tree import Tree
+
 app = FastAPI(
     title="Vertex cover",
     description="An implementation of vertex cover visualization with kernelization, pruning, search tree "
@@ -25,6 +27,18 @@ def generate(item: GenerateItem):
     graph = Graph()
     graph.generate_graph(item.vertices, item.probability)
     return graph.graph
+
+
+class GenerateTreeItem(BaseModel):
+    nodes: int
+    max_children: int
+
+
+@app.post("/generate-tree")
+def generate_tree(item: GenerateTreeItem):
+    tree = Tree()
+    tree.create_tree(item.nodes, item.max_children)
+    return tree.graph.graph
 
 
 class UpdateItem(BaseModel):
@@ -62,6 +76,12 @@ class CoverItem(BaseModel):
     graph: Any
     depth: int
     k: int
+
+
+@app.post("/tree-cover")
+def tree_cover(c: CoverItem):
+    graph = Graph(c.graph)
+    return graph.tree_approximation()
 
 
 @app.post("/vertex-cover")

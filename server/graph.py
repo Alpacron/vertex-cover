@@ -1,5 +1,5 @@
-import random
 import json
+import random
 
 
 class Graph:
@@ -96,9 +96,10 @@ class Graph:
         self.graph[str(v)].remove(u)
 
     def remove_all_edges(self, v: int):
-        edges = list(self.graph[str(v)])
-        for e in edges:
-            self.remove_edge(e, v)
+        if v in self.vertices():
+            edges = list(self.graph[str(v)])
+            for e in edges:
+                self.remove_edge(e, v)
 
     def is_connected(self, u: int, v: int):
         """
@@ -372,4 +373,27 @@ class Graph:
             edges = [e for e in edges if e[0] is not u and e[0] is not v and e[1] is not u and e[1] is not v]
 
         # Return the result
+        return cover
+
+    def tree_approximation(self):
+        # Initialize the empty cover
+        cover = []
+        leaves = [v for v in self.vertices() if self.is_pendant(v)]
+        parents = [node for parents in [self.graph[str(leave)] for leave in leaves] for node in parents]
+
+        # While there exists leaves in the graph.
+        while leaves:
+            # Add all parents to the cover.
+            for parent in parents:
+                cover.append(parent)
+
+            # Remove all leaves and their parents from the graph.
+            for node in leaves + parents:
+                self.remove_all_edges(node)
+                self.remove_vertex(node)
+
+            # Recalculate leaves and parents
+            leaves = [node for node in self.vertices() if self.is_pendant(node)]
+            parents = [node for parents in [self.graph[str(leave)] for leave in leaves] for node in parents]
+
         return cover

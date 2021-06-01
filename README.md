@@ -43,7 +43,7 @@ After it has undergone this transformation, we use the resulting graph as input 
 above. For most cases this result in a faster execution of the brute force algorithm, since there are fewer vertices.
 However, an edge case might be a complete graph, since there are no tops, pendants or isolated vertices.
 
-Finally, we have the approximation algorithm. How it works is below:
+Third, we have the approximation algorithm. How it works is below:
 
 ```
 C = ∅
@@ -52,6 +52,19 @@ while E ≠ ∅
     pick any {u, v} ∈ E
     C = C ∪ {u, v}
     delete all edges incident to either u or v
+
+return C
+```
+
+Finally, we have the functionality to create a tree data structure and run the approximation algorithm for trees on it.
+Which is described below:
+
+```
+C = ∅
+
+while ∃	leaves in G
+    Add all parents to C
+    Remove all leaves and their parents from G
 
 return C
 ```
