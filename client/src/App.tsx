@@ -43,7 +43,7 @@ export function App(): JSX.Element {
             Object.keys(graphRef.current.state.nodes).forEach((node: any) => {
                 if (graphRef.current != null && graphBoundingRef.current != null) {
                     graphRef.current.state.nodes[node].y =
-                        highestY + 250 * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
+                        highestY + (250 * maxChildren) * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
                 }
             });
         }
@@ -54,7 +54,7 @@ export function App(): JSX.Element {
         if (isTree) {
             arrangeTree();
         }
-    }, [width, height, data, setData, isTree, arrangeTree]);
+    }, [width, height, data, setData, arrangeTree, isTree]);
 
     useEffect(() => {
         setData({ '0': [1], '1': [0] });

@@ -212,7 +212,7 @@ export function SideBar(props: {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <H6>
-                        Binary tree
+                        Tree
                         <Button
                             minimal
                             small

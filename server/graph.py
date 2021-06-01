@@ -379,9 +379,7 @@ class Graph:
         # Initialize the empty cover
         cover = []
         leaves = [v for v in self.vertices() if self.is_pendant(v)]
-        print("leaves", leaves)
         parents = [node for parents in [self.graph[str(leave)] for leave in leaves] for node in parents]
-        print("parents", parents)
 
         # While there exists leaves in the graph.
         while leaves:
