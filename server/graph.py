@@ -46,6 +46,8 @@ class Graph:
                 if u > v and not self.is_connected(u, v) and random.choices(e, probability)[0]:
                     self.add_edge(u, v)
 
+        return self.graph
+
     def vertices(self):
         """
         Returns a list of all vertices in the graph.

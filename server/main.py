@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Any
 
 from tree import Tree
+from weighted_graph import WeightedGraph
 
 app = FastAPI(
     title="Vertex cover",
@@ -39,6 +40,17 @@ def generate_tree(item: GenerateTreeItem):
     tree = Tree()
     tree.create_tree(item.nodes, item.max_children)
     return tree.graph.graph
+
+
+class GenerateWeightedItem(BaseModel):
+    vertices: int
+    probability: float
+    max_weight: int
+
+
+@app.post("/generate-weighted")
+def generate_weighted(item: GenerateWeightedItem):
+    return WeightedGraph(item.nodes, item.max_children, item.max_weight)
 
 
 class UpdateItem(BaseModel):
