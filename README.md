@@ -56,7 +56,7 @@ while E ≠ ∅
 return C
 ```
 
-Finally, we have the functionality to create a tree data structure and run the approximation algorithm for trees on it.
+We have the functionality to create a tree data structure and run the approximation algorithm for trees on it.
 Which is described below:
 
 ```
@@ -68,6 +68,11 @@ while ∃	leaves in G
 
 return C
 ```
+Finally we implemented christofides algorithm for the Traveling Salesman Problem, with the following algorithm.
+1. Find a minimum spanning tree T.
+2. Let O be the set of nodes with odd degree in T. Find a minimum-cost perfect matching M on O.
+3. Add the set of edges of M to T. Find an Eulerian tour.
+4. Shortcut the Eulerian tour.
 
 ## Getting started
 
