@@ -98,3 +98,17 @@ class WeightedGraph:
             vertices[edge[0]] += 1
             vertices[edge[1]] += 1
         return [x for x in range(len(vertices)) if vertices[x] % 2 != 0]
+
+    # Form the subgraph of a graph using only a set of vertices
+    def subgraph_from_vertices(self, vertices):
+        g = self.graph.graph.copy()
+
+        # Remove all edges from graph that include vertices not in the vertices argument
+        for v in list(g.keys()):
+            if int(v) not in vertices:
+                for u in g[v]:
+                    # Get index of element
+                    index = next((i for i, item in enumerate(g[str(u[0])]) if item[0] == int(v)), -1)
+                    del g[str(u[0])][index]
+                del g[v]
+        return g
