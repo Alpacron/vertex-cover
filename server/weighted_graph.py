@@ -112,3 +112,15 @@ class WeightedGraph:
                     del g[str(u[0])][index]
                 del g[v]
         return g
+
+    # Combine two graph's into one
+    def combine_graphs(self, sub1, sub2):
+        result = sub1.copy()
+        for v in sub2:
+            if v not in result:
+                result[v] = sub2[v]
+            else:
+                edges_not_in_result = [x for x in sub2[v] if len([y for y in result[v] if y[0] == x[0]]) == 0]
+                for e in edges_not_in_result:
+                    result[v].append(e)
+        return result
