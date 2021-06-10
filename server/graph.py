@@ -7,13 +7,18 @@ class Graph:
     Graph data structure G = (V, E). Vertices contain the information about the edges.
     """
 
-    def __init__(self, g=None):
-        if g is None:
-            g = {}
-        g2 = {}
-        for vertex in g.keys():
-            g2.update({str(vertex): [int(e) for e in g[vertex]]})
-        self.graph = g2
+    def __init__(self, graph=None):
+        if graph is None:
+            graph = {}
+        is_weighted = graph is not None and any(
+            True for x in graph if len(graph[x]) > 0 and isinstance(graph[x][0], list))
+        graph2 = {}
+        for vertex in graph.keys():
+            if is_weighted:
+                graph2.update({str(vertex): [int(e[0]) for e in graph[vertex]]})
+            else:
+                graph2.update({str(vertex): [int(e) for e in graph[vertex]]})
+        self.graph = graph2
 
     def __str__(self):
         return json.dumps(self.graph)

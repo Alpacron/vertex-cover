@@ -30,6 +30,17 @@ def generate(item: GenerateItem):
     return graph.graph
 
 
+class GenerateWeightedItem(BaseModel):
+    vertices: int
+
+
+@app.post("/generate-weighted")
+def generate_weighted(item: GenerateWeightedItem):
+    weighted = WeightedGraph()
+    weighted.generate_graph(item.vertices)
+    return weighted.graph.graph
+
+
 class GenerateTreeItem(BaseModel):
     nodes: int
     max_children: int
@@ -42,25 +53,13 @@ def generate_tree(item: GenerateTreeItem):
     return tree.graph.graph
 
 
-class GenerateWeightedItem(BaseModel):
-    vertices: int
-    probability: float
-    max_weight: int
-
-
-@app.post("/generate-weighted")
-def generate_weighted(item: GenerateWeightedItem):
-    return WeightedGraph(item.nodes, item.max_children, item.max_weight)
-
-
 class UpdateItem(BaseModel):
     graph: Any
 
 
 @app.put("/get-matrix")
 def get_matrix(g: UpdateItem):
-    graph = Graph(g.graph)
-    return json.dumps(graph.to_adj_matrix())
+    return json.dumps(Graph(g.graph).to_adj_matrix())
 
 
 @app.put("/connect-sub")
@@ -167,3 +166,12 @@ def decrease_isolated(g: UpdateItem):
 def kernelization(g: TopsItem):
     graph = Graph(g.graph)
     return graph.visualize_kernelization(g.k)
+
+
+class GraphItem(BaseModel):
+    graph: Any
+
+@app.post("/minimum-spanning-tree")
+def minimum_spanning_tree(g: GraphItem):
+    graph = WeightedGraph(g.graph)
+    return graph.kruskal_mst()
