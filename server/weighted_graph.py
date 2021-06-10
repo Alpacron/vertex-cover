@@ -7,13 +7,15 @@ class WeightedGraph:
         if graph is not None:
             self.graph.graph = graph
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.graph.graph)
 
-    def generate_graph(self, n: int):
+    def generate_graph(self, n: int) -> dict[str, list[list[int]]]:
+        self.graph.graph = {}
         # Add vertices
         for i in range(n):
             self.graph.graph[str(i)] = [[x, 1] for x in range(n) if x != i]
+        return self.graph.graph
 
     # A utility function to find set of an element i
     # (uses path compression technique)
@@ -42,7 +44,7 @@ class WeightedGraph:
             rank[xroot] += 1
 
     # Calculates a minimum spanning tree using kruskal's algorithm
-    def kruskal_mst(self):
+    def kruskal_mst(self) -> list[list[int]]:
         result = []  # This will store the resultant MST
 
         # An index variable, used for sorted edges
@@ -92,7 +94,7 @@ class WeightedGraph:
         return result
 
     # Find vertices with odd degree in list of edges
-    def get_vertices_with_odd_degree(self, n, edges):
+    def get_vertices_with_odd_degree(self, n, edges) -> list[int]:
         vertices = [0 for _ in range(n)]
         for edge in edges:
             vertices[edge[0]] += 1
@@ -100,7 +102,7 @@ class WeightedGraph:
         return [x for x in range(len(vertices)) if vertices[x] % 2 != 0]
 
     # Form the subgraph of a graph using only a set of vertices
-    def subgraph_from_vertices(self, vertices):
+    def subgraph_from_vertices(self, vertices) -> dict[str, list[list[int]]]:
         g = self.graph.graph.copy()
 
         # Remove all edges from graph that include vertices not in the vertices argument
@@ -114,7 +116,7 @@ class WeightedGraph:
         return g
 
     # Combine two graph's into one
-    def combine_graphs(self, sub1, sub2):
+    def combine_graphs(self, sub1, sub2) -> dict[str, list[list[int]]]:
         result = sub1.copy()
         for v in sub2:
             if v not in result:
