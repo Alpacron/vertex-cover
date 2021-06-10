@@ -56,24 +56,26 @@ export function CodeViewer(props: {
                         if (graphDiv.current != null) {
                             // Checking if graph is a valid json graph
                             if (
-                                /^[\s\n]*{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[(\d+([\s\n]*,[\s\n]*\d+)*)?][\s\n]*))*}[\s\n]*$/g.test(
+                                /^[\s\n]*{([\s\n]*"\d+"[\s\n]*:[\s\n]*\[((\d+([\s\n]*,[\s\n]*\d+)*)|(\[\d+([\s\n]*,[\s\n]*\d+])*([\s\n]*,[\s\n]*(\[\d+([\s\n]*,[\s\n]*\d+])*))*)*)*][\s\n]*)(,([\s\n]*"\d+"[\s\n]*:[\s\n]*\[((\d+([\s\n]*,[\s\n]*\d+)*)|(\[\d+([\s\n]*,[\s\n]*\d+])*([\s\n]*,[\s\n]*(\[\d+([\s\n]*,[\s\n]*\d+])*))*)*)*][\s\n]*))*}[\s\n]*$/g.test(
                                     graphDiv.current.innerText
                                 )
                             ) {
                                 const json = JSON.parse(graphDiv.current.innerText);
                                 // Checking if every connection goes both ways, else add connection
                                 Object.keys(json).forEach((key: string) => {
-                                    // Sort and remove duplicates
-                                    json[key] = json[key].sort().filter(function (item: any, pos: any, ary: any) {
-                                        return !pos || item != ary[pos - 1];
-                                    });
-                                    json[key].forEach((con: string) => {
-                                        if (key == con || json[con] == undefined) {
-                                            json[key].splice(json[key].indexOf(con));
-                                        } else if (!json[con].includes(parseInt(key))) {
-                                            json[con].push(parseInt(key));
-                                        }
-                                    });
+                                    // Sort and fix duplicates
+                                    if (typeof json[key][0] == "number") {
+                                        json[key] = json[key].sort().filter(function (item: any, pos: any, ary: any) {
+                                            return !pos || item != ary[pos - 1];
+                                        });
+                                        json[key].forEach((con: string) => {
+                                            if (key == con || json[con] == undefined) {
+                                                json[key].splice(json[key].indexOf(con));
+                                            } else if (!json[con].includes(parseInt(key))) {
+                                                json[con].push(parseInt(key));
+                                            }
+                                        });
+                                    }
                                 });
                                 // set data to json
                                 props.setKernel({ isolated: [], pendant: [], tops: [] });

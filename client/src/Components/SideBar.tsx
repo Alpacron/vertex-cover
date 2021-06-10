@@ -1,9 +1,9 @@
-import { Popup } from './Popup';
-import { Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput } from '@blueprintjs/core';
-import { Clock } from './Clock';
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
-import { useWindowDimensions } from '../Util/useWindowDimensions';
-import { PromiseWithCancel } from '../Interfaces/PromiseWithCancel';
+import {Popup} from './Popup';
+import {Button, ButtonGroup, Card, Collapse, FormGroup, H6, NumericInput} from '@blueprintjs/core';
+import {Clock} from './Clock';
+import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
+import {useWindowDimensions} from '../Util/useWindowDimensions';
+import {PromiseWithCancel} from '../Interfaces/PromiseWithCancel';
 
 export function SideBar(props: {
     data: Record<string, unknown>;
@@ -12,6 +12,7 @@ export function SideBar(props: {
     setCover: Dispatch<SetStateAction<{ depth: number; vertices: number[] }>>;
     kernel: { isolated: number[]; pendant: number[]; tops: number[] };
     setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[] }>>;
+    setEdges: Dispatch<SetStateAction<number[][]>>;
     coverDepth: number;
     setCoverDepth: Dispatch<SetStateAction<number>>;
     doFetch: (
@@ -27,34 +28,41 @@ export function SideBar(props: {
     isTree: boolean;
     setIsTree: Dispatch<SetStateAction<boolean>>;
 }): JSX.Element {
-    const { width } = useWindowDimensions();
+    const {width} = useWindowDimensions();
     const [vertexCoverTime, setVertexCoverTime] = useState<number>(0);
     const [vertexCoverApproximationTime, setVertexCoverApproximationTime] = useState<number>(0);
     const [vertexCoverApproximationTreeTime, setVertexCoverApproximationTreeTime] = useState<number>(0);
     const [vertexCoverKernelizedTime, setVertexCoverKernelizedTime] = useState<number>(0);
-    const [generateOpen, setGenerateOpen] = useState(true);
     const [connectionOpen, setConnectionOpen] = useState(false);
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
     const [kernelizationOpen, setKernelizationOpen] = useState(false);
+    const [christofidesOpen, setchristofidesOpen] = useState(false);
     const [coverK, setCoverK] = useState<number>(-1);
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
+    const [weightedVertices, setWeightedVertices] = useState<number>(5);
     const [nodes, setNodes] = useState<number>(3);
-    const [generateTreeOpen, setGenerateTreeOpen] = useState<boolean>(false);
     const [probability, setProbability] = useState<number>(0.5);
+    const [graphType, setGraphType] = useState<"normal" | "tree" | "weighted">("normal");
+    const [graph, setGraph] = useState<any>({});
+    const [treeGraph, setTreeGraph] = useState<any>({});
+    const [weightedGraph, setWeightedGraph] = useState<any>({});
 
     const setData = props.setData;
     const setKernel = props.setKernel;
     const setCover = props.setCover;
+    const setEdges = props.setEdges;
 
     useEffect(() => {
-        setData({ '0': [1], '1': [0] });
+        setData({'0': [1], '1': [0]});
+        setGraph({'0': [1], '1': [0]});
     }, [setData]);
 
     useEffect(() => {
-        setKernel({ isolated: [], pendant: [], tops: [] });
-        setCover({ depth: props.coverDepth, vertices: [] });
-    }, [props.coverDepth, setCover, setKernel]);
+        setKernel({isolated: [], pendant: [], tops: []});
+        setCover({depth: props.coverDepth, vertices: []});
+        setEdges([]);
+    }, [props.coverDepth, setCover, setKernel, setEdges]);
 
     const generateGraph = () => {
         props.doFetch(
@@ -65,6 +73,7 @@ export function SideBar(props: {
                 probability: probability
             },
             (res) => {
+                setGraph(res.data);
                 props.setData(res.data);
             },
             'Generate graph'
@@ -81,10 +90,27 @@ export function SideBar(props: {
                 max_children: props.maxChildren
             },
             (res) => {
+                setTreeGraph(res.data);
                 props.setData(res.data);
             }
         );
         props.setIsTree(true);
+    };
+
+    const generateWeighted = () => {
+        props.doFetch(
+            '/generate-weighted',
+            'POST',
+            {
+                vertices: weightedVertices
+            },
+            (res) => {
+                setWeightedGraph(res.data);
+                props.setData(res.data);
+            },
+            'Generate weighted graph'
+        );
+        props.setIsTree(false);
     };
 
     const getVertexCover = (path: string, name: string) => {
@@ -97,7 +123,7 @@ export function SideBar(props: {
                 k: coverK
             },
             (res) => {
-                props.setCover({ depth: props.coverDepth, vertices: res.data });
+                props.setCover({depth: props.coverDepth, vertices: res.data});
                 const time = (new Date().getTime() - res.query.dateTime.getTime()) / 1000;
                 if (path.includes('kernelized')) {
                     setVertexCoverKernelizedTime(time);
@@ -128,6 +154,20 @@ export function SideBar(props: {
         );
     };
 
+    const getMinimumSpanningTree = (graph?: Record<string, unknown>) => {
+        props.doFetch(
+            '/minimum-spanning-tree',
+            'POST',
+            {
+                graph: graph != undefined ? graph : props.data
+            },
+            (res) => {
+                props.setEdges(res.data);
+            },
+            'Minimum Spanning Tree'
+        );
+    };
+
     const putGraphResponse = (path: string) => {
         props.doFetch(
             path,
@@ -151,12 +191,12 @@ export function SideBar(props: {
                 y={20}
                 transitionFade="0.5s"
                 centerX
-                style={{ transitionDelay: props.query ? '0.5s' : '0s' }}
+                style={{transitionDelay: props.query ? '0.5s' : '0s'}}
             >
                 <Card elevation={2}>
                     <p>
-                        <Clock minus={props.query ? props.query.dateTime.getTime() : 0} divider={1000} />
-                        <p style={{ display: 'contents' }}>
+                        <Clock minus={props.query ? props.query.dateTime.getTime() : 0} divider={1000}/>
+                        <p style={{display: 'contents'}}>
                             {props.query ? ' seconds on task: ' + props.query.name : ''}
                         </p>
                     </p>
@@ -175,89 +215,109 @@ export function SideBar(props: {
                     minWidth: '264px'
                 }}
             >
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <H6>
-                        Undirected graph
-                        <Button
-                            minimal
-                            small
-                            icon={generateOpen ? 'chevron-up' : 'chevron-down'}
-                            onClick={() => setGenerateOpen(!generateOpen)}
+                <ButtonGroup fill style={{marginBottom: '15px'}}>
+                    <Button onClick={() => {
+                        setGraphType("normal");
+                        setKernel({
+                            isolated: [],
+                            pendant: [],
+                            tops: []
+                        });
+                        setEdges([]);
+                        setCover({depth: 1, vertices: []});
+                        setData(graph)
+                    }}>Normal</Button>
+                    <Button onClick={() => {
+                        setGraphType("tree");
+                        setKernel({
+                            isolated: [],
+                            pendant: [],
+                            tops: []
+                        });
+                        setEdges([]);
+                        setCover({depth: 1, vertices: []});
+                        setData(treeGraph);
+                        if (Object.keys(treeGraph).length === 0) {
+                            generateTree()
+                        }
+                    }}>Tree</Button>
+                    <Button onClick={() => {
+                        setGraphType("weighted");
+                        setKernel({
+                            isolated: [],
+                            pendant: [],
+                            tops: []
+                        });
+                        setEdges([]);
+                        setCover({depth: 1, vertices: []});
+                        setData(weightedGraph);
+                        if (Object.keys(weightedGraph).length === 0) {
+                            generateWeighted()
+                        }
+                    }}>Weighted</Button>
+                </ButtonGroup>
+                <div style={{display: graphType != "tree" ? 'flex' : 'none', flexDirection: 'column'}}>
+                    <FormGroup label="Number of vertices" labelFor="vertices">
+                        <NumericInput
+                            min={1}
+                            width={5}
+                            id="vertices"
+                            value={graphType == "normal"? vertices : weightedVertices}
+                            onValueChange={n => graphType == "normal"? setVertices(n) : setWeightedVertices(n)}
                         />
-                    </H6>
-                    <Collapse isOpen={generateOpen} keepChildrenMounted>
-                        <FormGroup label="Number of vertices" labelFor="vertices">
-                            <NumericInput
-                                min={1}
-                                width={5}
-                                id="vertices"
-                                value={vertices}
-                                onValueChange={setVertices}
-                            />
-                        </FormGroup>
-                        <FormGroup label="Density of edges" labelFor="probability">
-                            <NumericInput
-                                min={0}
-                                max={1}
-                                stepSize={0.1}
-                                id="probability"
-                                value={probability}
-                                onValueChange={setProbability}
-                            />
-                        </FormGroup>
-                        <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
-                            <Button onClick={generateGraph}>Generate graph</Button>
-                        </ButtonGroup>
-                    </Collapse>
+                    </FormGroup>
+                    <FormGroup label="Density of edges" labelFor="probability" style={{display: graphType == "normal"? "" : "none"}}>
+                        <NumericInput
+                            min={0}
+                            max={1}
+                            stepSize={0.1}
+                            id="probability"
+                            value={probability}
+                            onValueChange={setProbability}
+                        />
+                    </FormGroup>
+                    <ButtonGroup style={{marginRight: '1em', marginBottom: '15px'}}>
+                        <Button
+                            onClick={() => graphType == "normal" ? generateGraph() : generateWeighted()}>Generate {graphType == "weighted" ? "weighted " : ""}graph</Button>
+                    </ButtonGroup>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <H6>
-                        Tree
-                        <Button
-                            minimal
-                            small
-                            icon={generateTreeOpen ? 'chevron-up' : 'chevron-down'}
-                            onClick={() => setGenerateTreeOpen(!generateTreeOpen)}
+                <div style={{display: graphType == "tree" ? 'flex' : 'none', flexDirection: 'column'}}>
+                    <FormGroup label="Number of nodes" labelFor="nodes">
+                        <NumericInput min={1} width={5} id="nodes" value={nodes} onValueChange={setNodes}/>
+                    </FormGroup>
+                    <FormGroup label="Number of children (maximum)" labelFor="maxChildren">
+                        <NumericInput
+                            min={1}
+                            width={5}
+                            id="maxChildren"
+                            value={props.maxChildren}
+                            onValueChange={props.setMaxChildren}
                         />
-                    </H6>
-                    <Collapse isOpen={generateTreeOpen} keepChildrenMounted>
-                        <FormGroup label="Number of nodes" labelFor="nodes">
-                            <NumericInput min={1} width={5} id="nodes" value={nodes} onValueChange={setNodes} />
-                        </FormGroup>
-                        <FormGroup label="Number of children (maximum)" labelFor="maxChildren">
-                            <NumericInput
-                                min={1}
-                                width={5}
-                                id="maxChildren"
-                                value={props.maxChildren}
-                                onValueChange={props.setMaxChildren}
-                            />
-                        </FormGroup>
-                        <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
-                            <Button onClick={generateTree}>Generate tree</Button>
-                        </ButtonGroup>
-                        <H6 style={{ color: '#137CBD' }}>Approximation vertex cover for a tree</H6>
-                        <ButtonGroup>
-                            <Button
-                                onClick={() => {
-                                    getVertexCover('/tree-cover', 'Approximation vertex cover for a tree');
-                                }}
-                            >
-                                Approximation vertex cover for a tree
-                            </Button>
-                        </ButtonGroup>
-                        <p style={{ marginTop: '10px' }}>
-                            {vertexCoverApproximationTreeTime > 0
-                                ? 'Approximation of vertex cover for a tree took: ' +
-                                  vertexCoverApproximationTreeTime +
-                                  ' seconds'
-                                : 'Approximation has not been run yet.'}
-                        </p>
-                    </Collapse>
+                    </FormGroup>
+                    <ButtonGroup style={{marginRight: '1em', marginBottom: '15px'}}>
+                        <Button onClick={generateTree}>Generate tree</Button>
+                    </ButtonGroup>
+                    <H6 style={{color: '#137CBD'}}>Approximation vertex cover for a tree</H6>
+                    <ButtonGroup>
+                        <Button
+                            onClick={() => {
+                                getVertexCover('/tree-cover', 'Approximation vertex cover for a tree');
+                            }}
+                        >
+                            Approximation vertex cover for a tree
+                        </Button>
+                    </ButtonGroup>
+                    <p style={{marginTop: '10px'}}>
+                        {vertexCoverApproximationTreeTime > 0
+                            ? 'Approximation of vertex cover for a tree took: ' +
+                            vertexCoverApproximationTreeTime +
+                            ' seconds'
+                            : 'Approximation has not been run yet.'}
+                    </p>
                 </div>
                 <div
                     style={{
-                        display: 'flex',
+                        display: graphType == "normal" ? 'flex' : 'none',
                         flexDirection: 'column'
                     }}
                 >
@@ -287,7 +347,7 @@ export function SideBar(props: {
                                 Connect two sub graphs
                             </Button>
                         </FormGroup>
-                        <FormGroup style={{ marginBottom: '15px' }}>
+                        <FormGroup style={{marginBottom: '15px'}}>
                             <Button
                                 title="Connect all disconnected sub graphs"
                                 onClick={() => putGraphResponse('/connect-all-sub')}
@@ -299,7 +359,7 @@ export function SideBar(props: {
                 </div>
                 <div
                     style={{
-                        display: 'flex',
+                        display: graphType == "normal"? 'flex' : 'none',
                         flexDirection: 'column'
                     }}
                 >
@@ -314,7 +374,7 @@ export function SideBar(props: {
                     </H6>
                     <Collapse isOpen={vertexCoverOpen} keepChildrenMounted>
                         <FormGroup
-                            style={{ display: 'flex', flexDirection: 'column' }}
+                            style={{display: 'flex', flexDirection: 'column'}}
                             label="Number of vertices"
                             labelFor="coverK"
                         >
@@ -327,7 +387,7 @@ export function SideBar(props: {
                             />
                         </FormGroup>
                         <FormGroup
-                            style={{ display: 'flex', flexDirection: 'column' }}
+                            style={{display: 'flex', flexDirection: 'column'}}
                             label="Vertex reach"
                             labelFor="depth"
                         >
@@ -339,7 +399,7 @@ export function SideBar(props: {
                                 onValueChange={props.setCoverDepth}
                             />
                         </FormGroup>
-                        <H6 style={{ color: '#137CBD' }}>Brute force vertex cover</H6>
+                        <H6 style={{color: '#137CBD'}}>Brute force vertex cover</H6>
                         <ButtonGroup>
                             <Button
                                 onClick={() => {
@@ -349,12 +409,12 @@ export function SideBar(props: {
                                 Brute force search
                             </Button>
                         </ButtonGroup>
-                        <p style={{ marginTop: '10px' }}>
+                        <p style={{marginTop: '10px'}}>
                             {vertexCoverTime > 0
                                 ? 'Vertex cover took: ' + vertexCoverTime + ' seconds'
                                 : 'Brute force has not been run yet.'}
                         </p>
-                        <H6 style={{ color: '#137CBD' }}>Brute force vertex cover with kernelization</H6>
+                        <H6 style={{color: '#137CBD'}}>Brute force vertex cover with kernelization</H6>
                         <ButtonGroup>
                             <Button
                                 onClick={() => {
@@ -367,12 +427,12 @@ export function SideBar(props: {
                                 Brute force search with kernelization
                             </Button>
                         </ButtonGroup>
-                        <p style={{ marginTop: '10px' }}>
+                        <p style={{marginTop: '10px'}}>
                             {vertexCoverKernelizedTime > 0
                                 ? 'Vertex cover took: ' + vertexCoverKernelizedTime + ' seconds'
                                 : 'Brute force with kernelization has not been run yet.'}
                         </p>
-                        <H6 style={{ color: '#137CBD' }}>Approximation vertex cover</H6>
+                        <H6 style={{color: '#137CBD'}}>Approximation vertex cover</H6>
                         <ButtonGroup>
                             <Button
                                 onClick={() => {
@@ -382,7 +442,7 @@ export function SideBar(props: {
                                 Approximation vertex cover
                             </Button>
                         </ButtonGroup>
-                        <p style={{ marginTop: '10px' }}>
+                        <p style={{marginTop: '10px'}}>
                             {vertexCoverApproximationTime > 0
                                 ? 'Approximation of vertex cover took: ' + vertexCoverApproximationTime + ' seconds'
                                 : 'Approximation has not been run yet.'}
@@ -391,7 +451,7 @@ export function SideBar(props: {
                 </div>
                 <div
                     style={{
-                        display: 'flex',
+                        display: graphType != "weighted" ? 'flex' : 'none',
                         flexDirection: 'column'
                     }}
                 >
@@ -405,42 +465,63 @@ export function SideBar(props: {
                         />
                     </H6>
                     <Collapse isOpen={kernelizationOpen} keepChildrenMounted>
-                        <H6 style={{ color: '#137CBD' }}>Isolated vertices</H6>
+                        <H6 style={{color: '#137CBD'}}>Isolated vertices</H6>
                         <FormGroup
-                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                            style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}
                             label="Number of isolated vertices"
                         >
-                            <ButtonGroup style={{ marginLeft: '1em' }}>
+                            <ButtonGroup style={{marginLeft: '1em'}}>
                                 <Button onClick={() => putGraphResponse('/decrease-isolated')}>-</Button>
                                 <Button onClick={() => putGraphResponse('/increase-isolated')}>+</Button>
                             </ButtonGroup>
                         </FormGroup>
-                        <H6 style={{ color: '#137CBD' }}>Pendants</H6>
+                        <H6 style={{color: '#137CBD'}}>Pendants</H6>
                         <FormGroup
-                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                            style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}
                             label="Number of pendants"
                         >
-                            <ButtonGroup style={{ marginLeft: '1em' }}>
+                            <ButtonGroup style={{marginLeft: '1em'}}>
                                 <Button onClick={() => putGraphResponse('/decrease-pendants')}>-</Button>
                                 <Button onClick={() => putGraphResponse('/increase-pendants')}>+</Button>
                             </ButtonGroup>
                         </FormGroup>
-                        <H6 style={{ color: '#137CBD' }}>Tops</H6>
+                        <H6 style={{color: '#137CBD'}}>Tops</H6>
                         <FormGroup label="Vertex degree" labelFor="tops" labelInfo="(k)">
-                            <NumericInput min={0} id="tops" value={vertexDegree} onValueChange={setVertexDegree} />
+                            <NumericInput min={0} id="tops" value={vertexDegree} onValueChange={setVertexDegree}/>
                         </FormGroup>
                         <FormGroup
-                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                            style={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}
                             label="Number of tops"
                         >
-                            <ButtonGroup style={{ marginLeft: '1em' }}>
+                            <ButtonGroup style={{marginLeft: '1em'}}>
                                 <Button onClick={() => putGraphResponse('/decrease-tops')}>-</Button>
                                 <Button onClick={() => putGraphResponse('/increase-tops')}>+</Button>
                             </ButtonGroup>
                         </FormGroup>
-                        <H6 style={{ color: '#137CBD' }}>Kernelization</H6>
-                        <ButtonGroup style={{ marginBottom: '15px' }}>
+                        <H6 style={{color: '#137CBD'}}>Kernelization</H6>
+                        <ButtonGroup style={{marginBottom: '15px'}}>
                             <Button onClick={() => getKernelization()}>Perform kernelization</Button>
+                        </ButtonGroup>
+                    </Collapse>
+                </div>
+                <div
+                    style={{
+                        display: graphType == "weighted" ? 'flex' : 'none',
+                        flexDirection: 'column'
+                    }}
+                >
+                    <H6>
+                        Christofides algorithm
+                        <Button
+                            minimal
+                            small
+                            icon={christofidesOpen ? 'chevron-up' : 'chevron-down'}
+                            onClick={() => setchristofidesOpen(!christofidesOpen)}
+                        />
+                    </H6>
+                    <Collapse isOpen={christofidesOpen} keepChildrenMounted>
+                        <ButtonGroup style={{marginBottom: '15px'}}>
+                            <Button onClick={() => getMinimumSpanningTree()}>Minimum spanning tree</Button>
                         </ButtonGroup>
                     </Collapse>
                 </div>
