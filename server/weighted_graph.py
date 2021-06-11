@@ -74,7 +74,7 @@ class WeightedGraph:
     def get_vertex_index(self, v: int, u: int) -> int:
         return [x for x in range(len(self.graph.graph[str(v)])) if self.graph.graph[str(v)][x][0] == u][0]
 
-    def get_weights(self, a: int, b: int, c: int) -> List[int, int, int]:
+    def get_weights(self, a: int, b: int, c: int) -> List[int]:
         ab = [x for x in self.graph.graph[str(a)] if x[0] == b][0][1]
         ac = [x for x in self.graph.graph[str(a)] if x[0] == c][0][1]
         bc = [x for x in self.graph.graph[str(b)] if x[0] == c][0][1]
@@ -107,7 +107,7 @@ class WeightedGraph:
             rank[xroot] += 1
 
     @staticmethod
-    def graph_to_edges(graph: Dict[str, List[List[int, int]]]) -> List[List[int]]:
+    def graph_to_edges(graph: Dict[str, List[List[int]]]) -> List[List[int]]:
         # Create an array of edges with their weight
         t = [[[int(x), y[0], y[1]] for y in graph[x] if y[0] > int(x)] for x in graph]
         # Flatten array
@@ -191,8 +191,8 @@ class WeightedGraph:
         return result
 
     # Find a minimum-weight perfect matching in a set of edges using a brute force algorithm
-    def perfect_matching(self, vertices: List[int], edges: List[List[int, int, int]],
-                         covered: List[List[int, int, int]] = None) -> List[List[int, int]]:
+    def perfect_matching(self, vertices: List[int], edges: List[List[int]],
+                         covered: List[List[int]] = None) -> List[List[int]]:
         if covered is None:
             covered = []
             # Sort edges from lowest to highest weight
@@ -219,7 +219,7 @@ class WeightedGraph:
         return []
 
     # Find euler tour with brute force algorithm
-    def calculate_euler_tour(self, edges: List[List[int, int]], covered: List[List[int, int]] = None) -> List[int]:
+    def calculate_euler_tour(self, edges: List[List[int]], covered: List[List[int]] = None) -> List[int]:
         if covered is None:
             covered = [edges[0]]
 
