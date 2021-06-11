@@ -134,7 +134,7 @@ class WeightedGraph:
         if best is None:
             best = []
 
-        for edge in [x for x in edges if x not in covered]:
+        for edge in [x for x in edges if len([y for y in covered if x[0] in [y[0], y[1]] or x[1] in [y[0], y[1]]]) == 0]:
             # Set current to cover
             current = covered + [edge]
             # Get all vertices in covered edges
@@ -194,13 +194,12 @@ class WeightedGraph:
         # Construct a minimum-weight perfect matching M in this subgraph
         m = self.perfect_matching(o, self.graph_to_edges(s))
         # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
-        print(t, m)
         e = self.combine_edges(t, m)
 
         return e
 
     def christofides_algorithm(self) -> list[int]:
-        # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
+        # Create an Eulerian multigraph
         e = self.eulerian_multigraph()
         # Calculate Euler tour
         et = self.calculate_euler_tour(e)
