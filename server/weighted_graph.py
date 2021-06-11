@@ -18,6 +18,16 @@ class WeightedGraph:
             # Add random weight to edges
             self.graph.graph[v] = [[x, random.randint(0, round(len(self.graph.graph) / 5)) + 1] for x in
                                    self.graph.graph[v]]
+
+        # Make sure edge degree is a minimum of 2 for every vertex
+        for v in self.graph.graph:
+            while len(self.graph.graph[v]) < 2:
+                available = [int(x) for x in self.graph.graph if int(x) not in [y[0] for y in self.graph.graph[v]]]
+                vertex = random.choice(available)
+                weight = round(len(self.graph.graph) / 5) + 1
+                self.graph.graph[v].append([vertex, weight])
+                self.graph.graph[str(vertex)].append([int(v), weight])
+
         # Make sure weights obey triangle inequality
         for v in self.graph.graph:
             for e in self.graph.graph[v]:
@@ -27,25 +37,38 @@ class WeightedGraph:
                         b = i[0]
                         c = int(v)
 
+                        self.graph.graph[str(b)][self.get_vertex_index(b, a)][1] = \
+                        self.graph.graph[str(a)][self.get_vertex_index(a, b)][1]
+                        self.graph.graph[str(c)][self.get_vertex_index(c, a)][1] = \
+                        self.graph.graph[str(a)][self.get_vertex_index(a, c)][1]
+                        self.graph.graph[str(c)][self.get_vertex_index(c, b)][1] = \
+                        self.graph.graph[str(b)][self.get_vertex_index(b, c)][1]
+
                         weights = self.get_weights(a, b, c)
                         while weights[0] > weights[1] + weights[2]:
                             index = self.get_vertex_index(a, b)
-                            self.graph.graph[str(a)][index] = [b, self.graph.graph[str(a)][index][1] - 1]
+                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             index = self.get_vertex_index(b, a)
-                            self.graph.graph[str(a)][index] = [b, self.graph.graph[str(a)][index][1] - 1]
+                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             weights = self.get_weights(a, b, c)
                         while weights[1] > weights[0] + weights[2]:
                             index = self.get_vertex_index(a, c)
-                            self.graph.graph[str(a)][index] = [c, self.graph.graph[str(a)][index][1] - 1]
+                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             index = self.get_vertex_index(c, a)
-                            self.graph.graph[str(a)][index] = [c, self.graph.graph[str(a)][index][1] - 1]
+                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             weights = self.get_weights(a, b, c)
                         while weights[2] > weights[0] + weights[1]:
                             index = self.get_vertex_index(b, c)
-                            self.graph.graph[str(b)][index] = [c, self.graph.graph[str(b)][index][1] - 1]
+                            self.graph.graph[str(b)][index][1] = self.graph.graph[str(b)][index][1] - 1
                             index = self.get_vertex_index(c, b)
-                            self.graph.graph[str(b)][index] = [c, self.graph.graph[str(b)][index][1] - 1]
+                            self.graph.graph[str(b)][index][1] = self.graph.graph[str(b)][index][1] - 1
                             weights = self.get_weights(a, b, c)
+
+        # Sort graph
+        for v in self.graph.graph:
+            self.graph.graph[v] = sorted(self.graph.graph[v], key=lambda item: item[0])
+
+        print(self.graph.graph)
 
         return self.graph.graph
 
