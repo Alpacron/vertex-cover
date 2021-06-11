@@ -155,3 +155,28 @@ class WeightedGraph:
         if len(covered) == 0 and len(best) > 0:
             return [[x[0], x[1]] for x in best]
         return best
+
+    # Find euler tour with brute force algorithm
+    def calculate_euler_tour(self, edges: list[list[int, int]], covered: list[list[int, int]] = None) -> list[int]:
+        if covered is None:
+            covered = [edges[0]]
+
+        if len(edges) != len(covered):
+            # Loop through edges that haven't been covered
+            for edge in [x for x in edges if x not in covered]:
+                if edge[0] in covered[-1] or edge[1] in covered[-1]:
+                    result = self.calculate_euler_tour(edges, covered + [edge])
+                    if len(result) > 0:
+                        return result
+        else:
+            # Return path in vertices
+            result = []
+            for e in range(len(covered)):
+                if e + 1 < len(covered):
+                    next_in_covered = covered[e + 1]
+                else:
+                    next_in_covered = covered[0]
+                result.append([x for x in covered[e] if x in next_in_covered][0])
+            return result + [result[0]]
+
+        return []
