@@ -43,6 +43,12 @@ class WeightedGraph:
             parent[yroot] = xroot
             rank[xroot] += 1
 
+    def graph_to_edges(self, graph: dict[str, list[list[int, int]]]):
+        # Create an array of edges with their weight
+        t = [[[int(x), y[0], y[1]] for y in graph[x] if y[0] > int(x)] for x in graph]
+        # Flatten array
+        return [item for sublist in t for item in sublist]
+
     # Calculates a minimum spanning tree using kruskal's algorithm
     def kruskal_mst(self) -> list[list[int]]:
         result = []  # This will store the resultant MST
@@ -56,12 +62,8 @@ class WeightedGraph:
         # Number of vertices
         n = len(self.graph.graph)
 
-        # Create an array of edges with their weight
-        t = [[[int(x), y[0], y[1]] for y in self.graph.graph[x] if y[0] > int(x)] for x in self.graph.graph]
-        # Flatten array
-        t = [item for sublist in t for item in sublist]
         # Sort all the edges in non-decreasing order of their weight.
-        edges = sorted(t, key=lambda item: item[2])
+        edges = sorted(self.graph_to_edges(self.graph.graph), key=lambda item: item[2])
 
         parent = []
         rank = []
@@ -90,11 +92,10 @@ class WeightedGraph:
 
         # Remove weights from edges in result
         result = [[x[0], x[1]] for x in result]
-        print(result)
         return result
 
     # Find vertices with odd degree in list of edges
-    def get_vertices_with_odd_degree(self, n, edges) -> list[int]:
+    def get_vertices_with_odd_degree(self, n: int, edges: list[list[int]]) -> list[int]:
         vertices = [0 for _ in range(n)]
         for edge in edges:
             vertices[edge[0]] += 1
@@ -102,7 +103,7 @@ class WeightedGraph:
         return [x for x in range(len(vertices)) if vertices[x] % 2 != 0]
 
     # Form the subgraph of a graph using only a set of vertices
-    def subgraph_from_vertices(self, vertices) -> dict[str, list[list[int]]]:
+    def subgraph_from_vertices(self, vertices: list[int]) -> dict[str, list[list[int]]]:
         g = self.graph.graph.copy()
 
         # Remove all edges from graph that include vertices not in the vertices argument
@@ -116,13 +117,41 @@ class WeightedGraph:
         return g
 
     # Combine two graph's into one
-    def combine_graphs(self, sub1, sub2) -> dict[str, list[list[int]]]:
-        result = sub1.copy()
-        for v in sub2:
-            if v not in result:
-                result[v] = sub2[v]
-            else:
-                edges_not_in_result = [x for x in sub2[v] if len([y for y in result[v] if y[0] == x[0]]) == 0]
-                for e in edges_not_in_result:
-                    result[v].append(e)
+    def combine_edges(self, sub1: list[list[int]], sub2: list[list[int]]) -> list[list[int]]:
+        result = sub1
+        # Remove doubles
+        for edge in sub2:
+            if edge not in result:
+                result.append(edge)
         return result
+
+    # Find a minimum-weight perfect matching in a set of edges using a brute force algorithm
+    def perfect_matching(self, vertices: list[int], edges: list[list[int, int, int]],
+                         covered: list[list[int, int, int]] = None,
+                         best: list[list[int, int, int]] = None) -> list[list[int, int]]:
+        if covered is None:
+            covered = []
+        if best is None:
+            best = []
+
+        for edge in [x for x in edges if x not in covered]:
+            # Set current to cover
+            current = covered + [edge]
+            # Get all vertices in covered edges
+            li = list(set([item for sublist in [[x[0], x[1]] for x in current] for item in sublist]))
+            # Check all vertices are covered, if so return current
+            weight = sum([x[2] for x in current])
+            # If all vertices are covered in current and weight is less then best weight, then best = current
+            if len(vertices) == len(li) and (len(best) == 0 or weight < sum([x[2] for x in best])):
+                best = current
+            # Else, if still below best weight
+            elif len(best) == 0 or weight + 1 < sum([x[2] for x in best]):
+                current = self.perfect_matching(vertices, edges, current, best)
+                # If weight of result is less then best weight, best = current
+                if len(best) == 0 or sum([x[2] for x in current]) < sum([x[2] for x in best]):
+                    best = current
+
+        # Return only edges if at the end of loop
+        if len(covered) == 0 and len(best) > 0:
+            return [[x[0], x[1]] for x in best]
+        return best
