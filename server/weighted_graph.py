@@ -264,6 +264,6 @@ class WeightedGraph:
         # Calculate Euler tour
         et = self.calculate_euler_tour(e)
         # Remove repeated vertices, giving the algorithm's output
-        c = list(set(et))
+        c = list(dict.fromkeys(et))
 
         return c
