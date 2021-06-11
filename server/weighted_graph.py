@@ -47,29 +47,26 @@ class WeightedGraph:
 
                         weights = self.get_weights(a, b, c)
                         if weights[0] > weights[1] + weights[2]:
-                            index = self.get_vertex_index(a, b)
-                            self.graph.graph[str(a)][index][1] = weights[1] + weights[2]
-                            index = self.get_vertex_index(b, a)
-                            self.graph.graph[str(b)][index][1] = weights[1] + weights[2]
+                            self.set_edge_weight(a, b, weights[1] + weights[2])
                             weights[0] = weights[1] + weights[2]
                         if weights[1] > weights[0] + weights[2]:
-                            index = self.get_vertex_index(a, c)
-                            self.graph.graph[str(a)][index][1] = weights[0] + weights[2]
-                            index = self.get_vertex_index(c, a)
-                            self.graph.graph[str(c)][index][1] = weights[1] + weights[2]
+                            self.set_edge_weight(a, c, weights[1] + weights[2])
                             weights[1] = weights[0] + weights[2]
                         weights = self.get_weights(a, b, c)
                         if weights[2] > weights[0] + weights[1]:
-                            index = self.get_vertex_index(b, c)
-                            self.graph.graph[str(b)][index][1] = weights[1] + weights[2]
-                            index = self.get_vertex_index(c, b)
-                            self.graph.graph[str(c)][index][1] = weights[1] + weights[2]
+                            self.set_edge_weight(b, c, weights[1] + weights[2])
 
         # Sort graph
         for v in self.graph.graph:
             self.graph.graph[v] = sorted(self.graph.graph[v], key=lambda item: item[0])
 
         return self.graph.graph
+
+    def set_edge_weight(self, u: int, v: int, w: int):
+        index = self.get_vertex_index(u, v)
+        self.graph.graph[str(u)][index][1] = w
+        index = self.get_vertex_index(v, u)
+        self.graph.graph[str(v)][index][1] = w
 
     def get_vertex_index(self, v: int, u: int) -> int:
         return [x for x in range(len(self.graph.graph[str(v)])) if self.graph.graph[str(v)][x][0] == u][0]
@@ -106,7 +103,8 @@ class WeightedGraph:
             parent[yroot] = xroot
             rank[xroot] += 1
 
-    def graph_to_edges(self, graph: dict[str, list[list[int, int]]]) -> list[list[int]]:
+    @staticmethod
+    def graph_to_edges(graph: dict[str, list[list[int, int]]]) -> list[list[int]]:
         # Create an array of edges with their weight
         t = [[[int(x), y[0], y[1]] for y in graph[x] if y[0] > int(x)] for x in graph]
         # Flatten array
@@ -151,14 +149,14 @@ class WeightedGraph:
                 e = e + 1
                 result.append([u, v, w])
                 self.union(parent, rank, x, y)
-            # Else discard the edge
 
         # Remove weights from edges in result
         result = [[x[0], x[1]] for x in result]
         return result
 
     # Find vertices with odd degree in list of edges
-    def get_vertices_with_odd_degree(self, n: int, edges: list[list[int]]) -> list[int]:
+    @staticmethod
+    def get_vertices_with_odd_degree(n: int, edges: list[list[int]]) -> list[int]:
         vertices = [0 for _ in range(n)]
         for edge in edges:
             vertices[edge[0]] += 1
@@ -180,7 +178,8 @@ class WeightedGraph:
         return g
 
     # Combine two graph's into one
-    def combine_edges(self, sub1: list[list[int]], sub2: list[list[int]]) -> list[list[int]]:
+    @staticmethod
+    def combine_edges(sub1: list[list[int]], sub2: list[list[int]]) -> list[list[int]]:
         result = sub1
         # Remove doubles
         for edge in sub2:
@@ -227,7 +226,6 @@ class WeightedGraph:
                 is_in_route = (len(covered) < 2 or [y for y in [x for x in covered[-1] if x in covered[-2]] if
                                                     y not in edge])
                 if (edge[0] in covered[-1] or edge[1] in covered[-1]) and is_in_route:
-                    last = [x for x in covered[-1] if x in edge]
                     result = self.calculate_euler_tour(edges, covered + [edge])
                     if len(result) > 0:
                         return result
