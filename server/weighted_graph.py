@@ -29,7 +29,6 @@ class WeightedGraph:
                 self.graph.graph[v].append([vertex, weight])
                 self.graph.graph[str(vertex)].append([int(v), weight])
 
-        # Make sure weights obey triangle inequality
         for v in self.graph.graph:
             for e in self.graph.graph[v]:
                 for i in self.graph.graph[v]:
@@ -38,6 +37,7 @@ class WeightedGraph:
                         b = i[0]
                         c = int(v)
 
+                        # Make graph weights symmetric
                         self.graph.graph[str(b)][self.get_vertex_index(b, a)][1] = \
                             self.graph.graph[str(a)][self.get_vertex_index(a, b)][1]
                         self.graph.graph[str(c)][self.get_vertex_index(c, a)][1] = \
@@ -45,6 +45,7 @@ class WeightedGraph:
                         self.graph.graph[str(c)][self.get_vertex_index(c, b)][1] = \
                             self.graph.graph[str(b)][self.get_vertex_index(b, c)][1]
 
+                        # Make sure weights obey triangle inequality
                         weights = self.get_weights(a, b, c)
                         if weights[0] > weights[1] + weights[2]:
                             self.set_edge_weight(a, b, weights[1] + weights[2])
