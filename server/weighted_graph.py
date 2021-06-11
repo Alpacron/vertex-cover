@@ -45,19 +45,19 @@ class WeightedGraph:
                         self.graph.graph[str(b)][self.get_vertex_index(b, c)][1]
 
                         weights = self.get_weights(a, b, c)
-                        while weights[0] > weights[1] + weights[2]:
+                        while 3 < weights[0] > weights[1] + weights[2] > 2:
                             index = self.get_vertex_index(a, b)
                             self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             index = self.get_vertex_index(b, a)
                             self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             weights = self.get_weights(a, b, c)
-                        while weights[1] > weights[0] + weights[2]:
+                        while 3 < weights[1] > weights[0] + weights[2] > 2:
                             index = self.get_vertex_index(a, c)
                             self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             index = self.get_vertex_index(c, a)
                             self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
                             weights = self.get_weights(a, b, c)
-                        while weights[2] > weights[0] + weights[1]:
+                        while weights[2] > weights[0] + weights[1] > 2:
                             index = self.get_vertex_index(b, c)
                             self.graph.graph[str(b)][index][1] = self.graph.graph[str(b)][index][1] - 1
                             index = self.get_vertex_index(c, b)
@@ -67,8 +67,6 @@ class WeightedGraph:
         # Sort graph
         for v in self.graph.graph:
             self.graph.graph[v] = sorted(self.graph.graph[v], key=lambda item: item[0])
-
-        print(self.graph.graph)
 
         return self.graph.graph
 
@@ -107,7 +105,7 @@ class WeightedGraph:
             parent[yroot] = xroot
             rank[xroot] += 1
 
-    def graph_to_edges(self, graph: dict[str, list[list[int, int]]]):
+    def graph_to_edges(self, graph: dict[str, list[list[int, int]]]) -> list[list[int]]:
         # Create an array of edges with their weight
         t = [[[int(x), y[0], y[1]] for y in graph[x] if y[0] > int(x)] for x in graph]
         # Flatten array
@@ -197,13 +195,14 @@ class WeightedGraph:
             # Sort edges from lowest to highest weight
             edges = sorted(edges, key=lambda item: item[2])
 
+            vertices = [x for x in vertices if x in [item for sublist in [[y[0], y[1]] for y in edges] for item in sublist]]
+
         # Get all edges that can be added to matching
         available = [x for x in edges if len([y for y in covered if x[0] in [y[0], y[1]] or x[1] in [y[0], y[1]]]) == 0]
         for edge in available:
             # Set current to covered and edge in loop
             current = covered + [edge]
             # If all vertices are covered in current and weight is less then best weight, then best = current
-            print(current)
             if (len(vertices) % 2 == 0 and len(current) == len(vertices) / 2) or \
                     (len(vertices) % 2 == 1 and len(current) == (len(vertices) - 1) / 2):
                 return [[x[0], x[1]] for x in current]
@@ -223,7 +222,9 @@ class WeightedGraph:
         if len(edges) != len(covered):
             # Loop through edges that haven't been covered
             for edge in [x for x in edges if x not in covered]:
-                if edge[0] in covered[-1] or edge[1] in covered[-1]:
+                is_in_route = (len(covered) < 2 or [y for y in [x for x in covered[-1] if x in covered[-2]] if y not in edge])
+                if (edge[0] in covered[-1] or edge[1] in covered[-1]) and is_in_route:
+                    last = [x for x in covered[-1] if x in edge]
                     result = self.calculate_euler_tour(edges, covered + [edge])
                     if len(result) > 0:
                         return result
@@ -251,7 +252,7 @@ class WeightedGraph:
         # Form the subgraph of G using only the vertices of O
         s = self.subgraph_from_vertices(o)
         # Construct a minimum-weight perfect matching M in this subgraph
-        m = self.perfect_matching(o, self.graph_to_edges(s))
+        m = self.perfect_matching(o, [x for x in self.graph_to_edges(s) if [x[0], x[1]] not in t])
         # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
         e = self.combine_edges(t, m)
 
