@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from graph import Graph
 import random
 
@@ -11,7 +13,7 @@ class WeightedGraph:
     def __str__(self) -> str:
         return str(self.graph.graph)
 
-    def generate_graph(self, n: int, p: float) -> dict[str, list[list[int]]]:
+    def generate_graph(self, n: int, p: float) -> Dict[str, List[List[int]]]:
         # Generate default graph
         self.graph.graph = self.graph.generate_graph(n, p)
         for v in self.graph.graph:
@@ -72,7 +74,7 @@ class WeightedGraph:
     def get_vertex_index(self, v: int, u: int) -> int:
         return [x for x in range(len(self.graph.graph[str(v)])) if self.graph.graph[str(v)][x][0] == u][0]
 
-    def get_weights(self, a: int, b: int, c: int) -> list[int, int, int]:
+    def get_weights(self, a: int, b: int, c: int) -> List[int, int, int]:
         ab = [x for x in self.graph.graph[str(a)] if x[0] == b][0][1]
         ac = [x for x in self.graph.graph[str(a)] if x[0] == c][0][1]
         bc = [x for x in self.graph.graph[str(b)] if x[0] == c][0][1]
@@ -105,14 +107,14 @@ class WeightedGraph:
             rank[xroot] += 1
 
     @staticmethod
-    def graph_to_edges(graph: dict[str, list[list[int, int]]]) -> list[list[int]]:
+    def graph_to_edges(graph: Dict[str, List[List[int, int]]]) -> List[List[int]]:
         # Create an array of edges with their weight
         t = [[[int(x), y[0], y[1]] for y in graph[x] if y[0] > int(x)] for x in graph]
         # Flatten array
         return [item for sublist in t for item in sublist]
 
     # Calculates a minimum spanning tree using kruskal's algorithm
-    def kruskal_mst(self) -> list[list[int]]:
+    def kruskal_mst(self) -> List[List[int]]:
         result = []  # This will store the resultant MST
 
         # An index variable, used for sorted edges
@@ -157,7 +159,7 @@ class WeightedGraph:
 
     # Find vertices with odd degree in list of edges
     @staticmethod
-    def get_vertices_with_odd_degree(n: int, edges: list[list[int]]) -> list[int]:
+    def get_vertices_with_odd_degree(n: int, edges: List[List[int]]) -> List[int]:
         vertices = [0 for _ in range(n)]
         for edge in edges:
             vertices[edge[0]] += 1
@@ -165,7 +167,7 @@ class WeightedGraph:
         return [x for x in range(len(vertices)) if vertices[x] % 2 != 0]
 
     # Form the subgraph of a graph using only a set of vertices
-    def subgraph_from_vertices(self, vertices: list[int]) -> dict[str, list[list[int]]]:
+    def subgraph_from_vertices(self, vertices: List[int]) -> Dict[str, List[List[int]]]:
         g = self.graph.graph.copy()
 
         # Remove all edges from graph that include vertices not in the vertices argument
@@ -180,7 +182,7 @@ class WeightedGraph:
 
     # Combine two graph's into one
     @staticmethod
-    def combine_edges(sub1: list[list[int]], sub2: list[list[int]]) -> list[list[int]]:
+    def combine_edges(sub1: List[List[int]], sub2: List[List[int]]) -> List[List[int]]:
         result = sub1
         # Remove doubles
         for edge in sub2:
@@ -189,8 +191,8 @@ class WeightedGraph:
         return result
 
     # Find a minimum-weight perfect matching in a set of edges using a brute force algorithm
-    def perfect_matching(self, vertices: list[int], edges: list[list[int, int, int]],
-                         covered: list[list[int, int, int]] = None) -> list[list[int, int]]:
+    def perfect_matching(self, vertices: List[int], edges: List[List[int, int, int]],
+                         covered: List[List[int, int, int]] = None) -> List[List[int, int]]:
         if covered is None:
             covered = []
             # Sort edges from lowest to highest weight
@@ -217,7 +219,7 @@ class WeightedGraph:
         return []
 
     # Find euler tour with brute force algorithm
-    def calculate_euler_tour(self, edges: list[list[int, int]], covered: list[list[int, int]] = None) -> list[int]:
+    def calculate_euler_tour(self, edges: List[List[int, int]], covered: List[List[int, int]] = None) -> List[int]:
         if covered is None:
             covered = [edges[0]]
 
@@ -243,7 +245,7 @@ class WeightedGraph:
 
         return []
 
-    def eulerian_multigraph(self) -> list[list[int]]:
+    def eulerian_multigraph(self) -> List[List[int]]:
         # Number of vertices
         n = len(self.graph.graph)
 
@@ -260,7 +262,7 @@ class WeightedGraph:
 
         return e
 
-    def christofides_algorithm(self) -> list[int]:
+    def christofides_algorithm(self) -> List[int]:
         # Create an Eulerian multigraph
         e = self.eulerian_multigraph()
         # Calculate Euler tour
