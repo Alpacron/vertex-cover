@@ -45,7 +45,7 @@ export function App(): JSX.Element {
             Object.keys(graphRef.current.state.nodes).forEach((node: any) => {
                 if (graphRef.current != null && graphBoundingRef.current != null) {
                     graphRef.current.state.nodes[node].y =
-                        highestY + (250 * maxChildren) * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
+                        highestY + 250 * maxChildren * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
                 }
             });
         }
@@ -59,16 +59,16 @@ export function App(): JSX.Element {
     }, [width, height, data, setData, arrangeTree, isTree]);
 
     useEffect(() => {
-        if(kernel.isolated.length > 0 || kernel.pendant.length > 0 || kernel.tops.length > 0) {
-            setCover({depth: cover.depth, vertices: []});
+        if (kernel.isolated.length > 0 || kernel.pendant.length > 0 || kernel.tops.length > 0) {
+            setCover({ depth: cover.depth, vertices: [] });
             setEdges([]);
             setTour([]);
         }
-    }, [kernel]);
+    }, [cover.depth, kernel]);
 
     useEffect(() => {
-        if  (cover.vertices.length > 0) {
-            setKernel({isolated: [], pendant: [], tops: []});
+        if (cover.vertices.length > 0) {
+            setKernel({ isolated: [], pendant: [], tops: [] });
             setEdges([]);
             setTour([]);
         }
@@ -76,25 +76,25 @@ export function App(): JSX.Element {
 
     useEffect(() => {
         if (edges.length > 0) {
-            setKernel({isolated: [], pendant: [], tops: []});
-            setCover({depth: cover.depth, vertices: []});
+            setKernel({ isolated: [], pendant: [], tops: [] });
+            setCover({ depth: cover.depth, vertices: [] });
             setTour([]);
         }
-    }, [edges]);
+    }, [cover.depth, edges]);
 
     useEffect(() => {
         if (tour.length > 0) {
-            setKernel({isolated: [], pendant: [], tops: []});
-            setCover({depth: cover.depth, vertices: []});
+            setKernel({ isolated: [], pendant: [], tops: [] });
+            setCover({ depth: cover.depth, vertices: [] });
             setEdges([]);
         }
-    }, [tour]);
+    }, [cover.depth, tour]);
 
     useEffect(() => {
         setData({ '0': [1], '1': [0] });
     }, []);
 
-    const onClickNode = function(nodeId: string) {
+    const onClickNode = function (nodeId: string) {
         if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
             // const e = Array.isArray(edge) ? edge[0] : edge;
 
@@ -104,7 +104,6 @@ export function App(): JSX.Element {
             setCover({ depth: cover.depth, vertices: c });
         }
     };
-
 
     function centerNodes() {
         if (
@@ -155,14 +154,13 @@ export function App(): JSX.Element {
             isTree={isTree}
             setIsTree={setIsTree}
         >
-            <div className='container__graph-area' ref={graphBoundingRef}>
+            <div className="container__graph-area" ref={graphBoundingRef}>
                 <Graph
-                    id='graph-id'
+                    id="graph-id"
                     ref={graphRef}
                     data={convertToD3Graph(data, cover, kernel, tour, edges)}
                     onClickNode={onClickNode}
                     config={{
-
                         directed: tour.length > 0,
                         staticGraph: false,
                         staticGraphWithDragAndDrop: tour.length > 0,
@@ -171,7 +169,7 @@ export function App(): JSX.Element {
                         minZoom: 0.5,
                         maxZoom: 8,
                         link: {
-                            labelProperty: "text",
+                            labelProperty: 'text',
                             renderLabel: true
                         }
                     }}

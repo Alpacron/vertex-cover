@@ -64,7 +64,7 @@ export function CodeViewer(props: {
                                 // Checking if every connection goes both ways, else add connection
                                 Object.keys(json).forEach((key: string) => {
                                     // Sort and fix duplicates
-                                    if (typeof json[key][0] == "number") {
+                                    if (typeof json[key][0] == 'number') {
                                         json[key] = json[key].sort().filter(function (item: any, pos: any, ary: any) {
                                             return !pos || item != ary[pos - 1];
                                         });

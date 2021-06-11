@@ -1,4 +1,4 @@
-import {GraphData} from 'react-d3-graph';
+import { GraphData } from 'react-d3-graph';
 
 function getCover(
     graph: any,
@@ -15,7 +15,7 @@ function getCover(
                     (c) => (c.source === v && c.target === vertex) || (c.source === vertex && c.target === v)
                 ).length === 0
             )
-                covered.push({source: vertex, target: v});
+                covered.push({ source: vertex, target: v });
             covered = getCover(graph, v, depth, currentDepth + 1, covered);
         });
     }
@@ -39,15 +39,13 @@ export function convertToD3Graph(
         kernel.pendant.forEach((pendant) => (covered = getCover(graph, pendant, 1, 0, covered)));
         kernel.tops.forEach((top) => (covered = getCover(graph, top, 1, 0, covered)));
     } else if (edges.length > 0) {
-        edges.forEach((edge) => covered.push({source: edge[0], target: edge[1]}));
+        edges.forEach((edge) => covered.push({ source: edge[0], target: edge[1] }));
     } else if (tour.length > 0) {
         for (let i = 0; i < tour.length; i++) {
             let next;
-            if (i + 1 < tour.length)
-                next = tour[i + 1]
-            else
-                next = tour[0]
-            covered.push({source: tour[i], target: next})
+            if (i + 1 < tour.length) next = tour[i + 1];
+            else next = tour[0];
+            covered.push({ source: tour[i], target: next });
         }
     }
 
@@ -58,7 +56,7 @@ export function convertToD3Graph(
         else if (kernel.tops.includes(+connection)) color = '#137CBD';
         else if (kernel.isolated.includes(+connection)) color = '#D13913';
 
-        nodes.push({id: +connection, color: color});
+        nodes.push({ id: +connection, color: color });
         graph[connection].forEach((edge: number | [number, number]) => {
             const e = Array.isArray(edge) ? edge[0] : edge;
             const w = Array.isArray(edge) ? edge[1] : 0;
@@ -77,7 +75,7 @@ export function convertToD3Graph(
                 const isCovered = coveredEdge >= 0;
                 // add link to link
                 links.push({
-                    text: w != 0 && (isCovered || tour.length == 0) ? w.toString() : "",
+                    text: w != 0 && (isCovered || tour.length == 0) ? w.toString() : '',
                     source: source,
                     target: target,
                     color: isCovered ? '#D99E0B' : covered.length > 0 ? '#d3d3d365' : '#d3d3d3',
@@ -88,5 +86,5 @@ export function convertToD3Graph(
         });
     });
 
-    return {nodes: nodes, links: links};
+    return { nodes: nodes, links: links };
 }
