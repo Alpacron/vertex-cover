@@ -22,7 +22,7 @@ class WeightedGraph:
         # Make sure edge degree is a minimum of 2 for every vertex
         for v in self.graph.graph:
             while len(self.graph.graph[v]) < 2:
-                available = [int(x) for x in self.graph.graph if int(x) not in [y[0] for y in self.graph.graph[v]]]
+                available = [int(x) for x in self.graph.graph if int(x) not in [y[0] for y in self.graph.graph[v]] and x is not v]
                 vertex = random.choice(available)
                 weight = round(len(self.graph.graph) / 5) + 1
                 self.graph.graph[v].append([vertex, weight])

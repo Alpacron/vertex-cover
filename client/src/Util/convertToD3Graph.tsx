@@ -51,24 +51,24 @@ export function convertToD3Graph(
         }
     }
 
-    Object.keys(graph).forEach((vertex: string) => {
+    Object.keys(graph).forEach((connection: string) => {
         let color = '#d3d3d3';
-        if (cover.vertices.includes(+vertex)) color = '#3f51b5';
-        else if (kernel.pendant.includes(+vertex)) color = '#0D8050';
-        else if (kernel.tops.includes(+vertex)) color = '#137CBD';
-        else if (kernel.isolated.includes(+vertex)) color = '#D13913';
+        if (cover.vertices.includes(+connection)) color = '#3f51b5';
+        else if (kernel.pendant.includes(+connection)) color = '#0D8050';
+        else if (kernel.tops.includes(+connection)) color = '#137CBD';
+        else if (kernel.isolated.includes(+connection)) color = '#D13913';
 
-        nodes.push({id: +vertex, color: color});
-        graph[vertex].forEach((edge: number | [number, number]) => {
+        nodes.push({id: +connection, color: color});
+        graph[connection].forEach((edge: number | [number, number]) => {
             const e = Array.isArray(edge) ? edge[0] : edge;
             const w = Array.isArray(edge) ? edge[1] : 0;
             // if link hasn't been added yet
-            if (e > +vertex) {
+            if (e > +connection) {
                 // check if it is covered
-                let coveredEdge = covered.findIndex((c) => c.source === +vertex && c.target === e);
+                let coveredEdge = covered.findIndex((c) => c.source === +connection && c.target === e);
                 if (coveredEdge == -1)
-                    coveredEdge = covered.findIndex((c) => c.target === +vertex && c.source === e);
-                let source = +vertex;
+                    coveredEdge = covered.findIndex((c) => c.target === +connection && c.source === e);
+                let source = +connection;
                 let target = e;
                 if (coveredEdge >= 0) {
                     source = covered[coveredEdge].source;
