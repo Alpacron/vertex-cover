@@ -1,4 +1,5 @@
 from graph import Graph
+import random
 
 
 class WeightedGraph:
@@ -10,12 +11,52 @@ class WeightedGraph:
     def __str__(self) -> str:
         return str(self.graph.graph)
 
-    def generate_graph(self, n: int) -> dict[str, list[list[int]]]:
-        self.graph.graph = {}
-        # Add vertices
-        for i in range(n):
-            self.graph.graph[str(i)] = [[x, 1] for x in range(n) if x != i]
+    def generate_graph(self, n: int, p: float) -> dict[str, list[list[int]]]:
+        # Generate default graph
+        self.graph.graph = self.graph.generate_graph(n, p)
+        for v in self.graph.graph:
+            # Add random weight to edges
+            self.graph.graph[v] = [[x, random.randint(0, round(len(self.graph.graph) / 5)) + 1] for x in
+                                   self.graph.graph[v]]
+        # Make sure weights obey triangle inequality
+        for v in self.graph.graph:
+            for e in self.graph.graph[v]:
+                for i in self.graph.graph[v]:
+                    if i[0] > e[0] > int(v) and len([x for x in self.graph.graph[str(e[0])] if x[0] == i[0]]) != 0:
+                        a = e[0]
+                        b = i[0]
+                        c = int(v)
+
+                        weights = self.get_weights(a, b, c)
+                        while weights[0] > weights[1] + weights[2]:
+                            index = self.get_vertex_index(a, b)
+                            self.graph.graph[str(a)][index] = [b, self.graph.graph[str(a)][index][1] - 1]
+                            index = self.get_vertex_index(b, a)
+                            self.graph.graph[str(a)][index] = [b, self.graph.graph[str(a)][index][1] - 1]
+                            weights = self.get_weights(a, b, c)
+                        while weights[1] > weights[0] + weights[2]:
+                            index = self.get_vertex_index(a, c)
+                            self.graph.graph[str(a)][index] = [c, self.graph.graph[str(a)][index][1] - 1]
+                            index = self.get_vertex_index(c, a)
+                            self.graph.graph[str(a)][index] = [c, self.graph.graph[str(a)][index][1] - 1]
+                            weights = self.get_weights(a, b, c)
+                        while weights[2] > weights[0] + weights[1]:
+                            index = self.get_vertex_index(b, c)
+                            self.graph.graph[str(b)][index] = [c, self.graph.graph[str(b)][index][1] - 1]
+                            index = self.get_vertex_index(c, b)
+                            self.graph.graph[str(b)][index] = [c, self.graph.graph[str(b)][index][1] - 1]
+                            weights = self.get_weights(a, b, c)
+
         return self.graph.graph
+
+    def get_vertex_index(self, v: int, u: int) -> int:
+        return [x for x in range(len(self.graph.graph[str(v)])) if self.graph.graph[str(v)][x][0] == u][0]
+
+    def get_weights(self, a: int, b: int, c: int) -> list[int, int, int]:
+        ab = [x for x in self.graph.graph[str(a)] if x[0] == b][0][1]
+        ac = [x for x in self.graph.graph[str(a)] if x[0] == c][0][1]
+        bc = [x for x in self.graph.graph[str(b)] if x[0] == c][0][1]
+        return [ab, ac, bc]
 
     # A utility function to find set of an element i
     # (uses path compression technique)
@@ -127,34 +168,29 @@ class WeightedGraph:
 
     # Find a minimum-weight perfect matching in a set of edges using a brute force algorithm
     def perfect_matching(self, vertices: list[int], edges: list[list[int, int, int]],
-                         covered: list[list[int, int, int]] = None,
-                         best: list[list[int, int, int]] = None) -> list[list[int, int]]:
+                         covered: list[list[int, int, int]] = None) -> list[list[int, int]]:
         if covered is None:
             covered = []
-        if best is None:
-            best = []
+            # Sort edges from lowest to highest weight
+            edges = sorted(edges, key=lambda item: item[2])
 
-        for edge in [x for x in edges if len([y for y in covered if x[0] in [y[0], y[1]] or x[1] in [y[0], y[1]]]) == 0]:
-            # Set current to cover
+        # Get all edges that can be added to matching
+        available = [x for x in edges if len([y for y in covered if x[0] in [y[0], y[1]] or x[1] in [y[0], y[1]]]) == 0]
+        for edge in available:
+            # Set current to covered and edge in loop
             current = covered + [edge]
-            # Get all vertices in covered edges
-            li = list(set([item for sublist in [[x[0], x[1]] for x in current] for item in sublist]))
-            # Check all vertices are covered, if so return current
-            weight = sum([x[2] for x in current])
             # If all vertices are covered in current and weight is less then best weight, then best = current
-            if len(vertices) == len(li) and (len(best) == 0 or weight < sum([x[2] for x in best])):
-                best = current
-            # Else, if still below best weight
-            elif len(best) == 0 or weight + 1 < sum([x[2] for x in best]):
-                current = self.perfect_matching(vertices, edges, current, best)
-                # If weight of result is less then best weight, best = current
-                if len(best) == 0 or sum([x[2] for x in current]) < sum([x[2] for x in best]):
-                    best = current
+            print(current)
+            if (len(vertices) % 2 == 0 and len(current) == len(vertices) / 2) or \
+                    (len(vertices) % 2 == 1 and len(current) == (len(vertices) - 1) / 2):
+                return [[x[0], x[1]] for x in current]
+            else:
+                current = self.perfect_matching(vertices, edges, current)
+                if len(current) > 0:
+                    return current
 
-        # Return only edges if at the end of loop
-        if len(covered) == 0 and len(best) > 0:
-            return [[x[0], x[1]] for x in best]
-        return best
+        # If no matching perfect is found, return empty list
+        return []
 
     # Find euler tour with brute force algorithm
     def calculate_euler_tour(self, edges: list[list[int, int]], covered: list[list[int, int]] = None) -> list[int]:

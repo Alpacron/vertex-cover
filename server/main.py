@@ -30,14 +30,10 @@ def generate(item: GenerateItem):
     return graph.graph
 
 
-class GenerateWeightedItem(BaseModel):
-    vertices: int
-
-
 @app.post("/generate-weighted")
-def generate_weighted(item: GenerateWeightedItem):
+def generate_weighted(item: GenerateItem):
     weighted = WeightedGraph()
-    weighted.generate_graph(item.vertices)
+    weighted.generate_graph(item.vertices, item.probability)
     return weighted.graph.graph
 
 
