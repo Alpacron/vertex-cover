@@ -65,7 +65,7 @@ export function SideBar(props: {
         setCover({depth: props.coverDepth, vertices: []});
         setEdges([]);
         setTour([]);
-    }, [props.coverDepth, setCover, setKernel, setEdges, setTour]);
+    }, [props.coverDepth, setCover, setKernel, setEdges, setTour, graph, treeGraph, weightedGraph]);
 
     const generateGraph = () => {
         props.doFetch(
