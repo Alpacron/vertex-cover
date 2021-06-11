@@ -94,6 +94,12 @@ export function App(): JSX.Element {
         setData({ '0': [1], '1': [0] });
     }, []);
 
+    useEffect(() => {
+        if (tour.length > 0) {
+            setData(data);
+        }
+    }, [data]);
+
     const onClickNode = function(nodeId: string) {
         if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
             // const e = Array.isArray(edge) ? edge[0] : edge;
