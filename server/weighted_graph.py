@@ -22,7 +22,8 @@ class WeightedGraph:
         # Make sure edge degree is a minimum of 2 for every vertex
         for v in self.graph.graph:
             while len(self.graph.graph[v]) < 2:
-                available = [int(x) for x in self.graph.graph if int(x) not in [y[0] for y in self.graph.graph[v]] and x is not v]
+                available = [int(x) for x in self.graph.graph if
+                             int(x) not in [y[0] for y in self.graph.graph[v]] and x is not v]
                 vertex = random.choice(available)
                 weight = round(len(self.graph.graph) / 5) + 1
                 self.graph.graph[v].append([vertex, weight])
@@ -38,31 +39,31 @@ class WeightedGraph:
                         c = int(v)
 
                         self.graph.graph[str(b)][self.get_vertex_index(b, a)][1] = \
-                        self.graph.graph[str(a)][self.get_vertex_index(a, b)][1]
+                            self.graph.graph[str(a)][self.get_vertex_index(a, b)][1]
                         self.graph.graph[str(c)][self.get_vertex_index(c, a)][1] = \
-                        self.graph.graph[str(a)][self.get_vertex_index(a, c)][1]
+                            self.graph.graph[str(a)][self.get_vertex_index(a, c)][1]
                         self.graph.graph[str(c)][self.get_vertex_index(c, b)][1] = \
-                        self.graph.graph[str(b)][self.get_vertex_index(b, c)][1]
+                            self.graph.graph[str(b)][self.get_vertex_index(b, c)][1]
 
                         weights = self.get_weights(a, b, c)
-                        while 3 < weights[0] > weights[1] + weights[2] > 2:
+                        if weights[0] > weights[1] + weights[2]:
                             index = self.get_vertex_index(a, b)
-                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
+                            self.graph.graph[str(a)][index][1] = weights[1] + weights[2]
                             index = self.get_vertex_index(b, a)
-                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
-                            weights = self.get_weights(a, b, c)
-                        while 3 < weights[1] > weights[0] + weights[2] > 2:
+                            self.graph.graph[str(b)][index][1] = weights[1] + weights[2]
+                            weights[0] = weights[1] + weights[2]
+                        if weights[1] > weights[0] + weights[2]:
                             index = self.get_vertex_index(a, c)
-                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
+                            self.graph.graph[str(a)][index][1] = weights[0] + weights[2]
                             index = self.get_vertex_index(c, a)
-                            self.graph.graph[str(a)][index][1] = self.graph.graph[str(a)][index][1] - 1
-                            weights = self.get_weights(a, b, c)
-                        while weights[2] > weights[0] + weights[1] > 2:
+                            self.graph.graph[str(c)][index][1] = weights[1] + weights[2]
+                            weights[1] = weights[0] + weights[2]
+                        weights = self.get_weights(a, b, c)
+                        if weights[2] > weights[0] + weights[1]:
                             index = self.get_vertex_index(b, c)
-                            self.graph.graph[str(b)][index][1] = self.graph.graph[str(b)][index][1] - 1
+                            self.graph.graph[str(b)][index][1] = weights[1] + weights[2]
                             index = self.get_vertex_index(c, b)
-                            self.graph.graph[str(b)][index][1] = self.graph.graph[str(b)][index][1] - 1
-                            weights = self.get_weights(a, b, c)
+                            self.graph.graph[str(c)][index][1] = weights[1] + weights[2]
 
         # Sort graph
         for v in self.graph.graph:
@@ -195,7 +196,8 @@ class WeightedGraph:
             # Sort edges from lowest to highest weight
             edges = sorted(edges, key=lambda item: item[2])
 
-            vertices = [x for x in vertices if x in [item for sublist in [[y[0], y[1]] for y in edges] for item in sublist]]
+            vertices = [x for x in vertices if
+                        x in [item for sublist in [[y[0], y[1]] for y in edges] for item in sublist]]
 
         # Get all edges that can be added to matching
         available = [x for x in edges if len([y for y in covered if x[0] in [y[0], y[1]] or x[1] in [y[0], y[1]]]) == 0]
@@ -222,7 +224,8 @@ class WeightedGraph:
         if len(edges) != len(covered):
             # Loop through edges that haven't been covered
             for edge in [x for x in edges if x not in covered]:
-                is_in_route = (len(covered) < 2 or [y for y in [x for x in covered[-1] if x in covered[-2]] if y not in edge])
+                is_in_route = (len(covered) < 2 or [y for y in [x for x in covered[-1] if x in covered[-2]] if
+                                                    y not in edge])
                 if (edge[0] in covered[-1] or edge[1] in covered[-1]) and is_in_route:
                     last = [x for x in covered[-1] if x in edge]
                     result = self.calculate_euler_tour(edges, covered + [edge])
