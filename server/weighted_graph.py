@@ -177,6 +177,27 @@ class WeightedGraph:
                 else:
                     next_in_covered = covered[0]
                 result.append([x for x in covered[e] if x in next_in_covered][0])
-            return result + [result[0]]
+            return result
 
         return []
+
+    def christofides_algorithm(self) -> list[int]:
+        # Number of vertices
+        n = len(self.graph.graph)
+
+        # Calculate minimum spanning tree T
+        t = self.kruskal_mst()
+        # Calculate the set of vertices O with odd degree in T
+        o = self.get_vertices_with_odd_degree(n, t)
+        # Form the subgraph of G using only the vertices of O
+        s = self.subgraph_from_vertices(o)
+        # Construct a minimum-weight perfect matching M in this subgraph
+        m = self.perfect_matching(o, self.graph_to_edges(s))
+        # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
+        e = self.combine_edges(t, m)
+        # Calculate Euler tour
+        et = self.calculate_euler_tour(e)
+        # Remove repeated vertices, giving the algorithm's output
+        c = list(set(et))
+
+        return c
