@@ -181,7 +181,7 @@ class WeightedGraph:
 
         return []
 
-    def eulerian_multigraph(self):
+    def eulerian_multigraph(self) -> list[list[int]]:
         # Number of vertices
         n = len(self.graph.graph)
 
@@ -194,6 +194,7 @@ class WeightedGraph:
         # Construct a minimum-weight perfect matching M in this subgraph
         m = self.perfect_matching(o, self.graph_to_edges(s))
         # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
+        print(t, m)
         e = self.combine_edges(t, m)
 
         return e

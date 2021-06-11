@@ -13,6 +13,7 @@ export function SideBar(props: {
     kernel: { isolated: number[]; pendant: number[]; tops: number[] };
     setKernel: Dispatch<SetStateAction<{ isolated: number[]; pendant: number[]; tops: number[] }>>;
     setEdges: Dispatch<SetStateAction<number[][]>>;
+    setTour: Dispatch<SetStateAction<number[]>>;
     coverDepth: number;
     setCoverDepth: Dispatch<SetStateAction<number>>;
     doFetch: (
@@ -36,7 +37,7 @@ export function SideBar(props: {
     const [connectionOpen, setConnectionOpen] = useState(false);
     const [vertexCoverOpen, setVertexCoverOpen] = useState(false);
     const [kernelizationOpen, setKernelizationOpen] = useState(false);
-    const [christofidesOpen, setchristofidesOpen] = useState(false);
+    const [travelingOpen, setTravelingOpen] = useState(false);
     const [coverK, setCoverK] = useState<number>(-1);
     const [vertexDegree, setVertexDegree] = useState<number>(1);
     const [vertices, setVertices] = useState<number>(10);
@@ -52,6 +53,7 @@ export function SideBar(props: {
     const setKernel = props.setKernel;
     const setCover = props.setCover;
     const setEdges = props.setEdges;
+    const setTour = props.setTour;
 
     useEffect(() => {
         setData({'0': [1], '1': [0]});
@@ -62,7 +64,8 @@ export function SideBar(props: {
         setKernel({isolated: [], pendant: [], tops: []});
         setCover({depth: props.coverDepth, vertices: []});
         setEdges([]);
-    }, [props.coverDepth, setCover, setKernel, setEdges]);
+        setTour([]);
+    }, [props.coverDepth, setCover, setKernel, setEdges, setTour]);
 
     const generateGraph = () => {
         props.doFetch(
@@ -168,6 +171,34 @@ export function SideBar(props: {
         );
     };
 
+    const getEulerianMultigraph = (graph?: Record<string, unknown>) => {
+        props.doFetch(
+            '/eulerian-multigraph',
+            'POST',
+            {
+                graph: graph != undefined ? graph : props.data
+            },
+            (res) => {
+                props.setEdges(res.data);
+            },
+            'Eulerian multigraph'
+        );
+    };
+
+    const getChristofides = (graph?: Record<string, unknown>) => {
+        props.doFetch(
+            '/christofides-algorithm',
+            'POST',
+            {
+                graph: graph != undefined ? graph : props.data
+            },
+            (res) => {
+                props.setTour(res.data);
+            },
+            'Eulerian multigraph'
+        );
+    };
+
     const putGraphResponse = (path: string) => {
         props.doFetch(
             path,
@@ -224,6 +255,7 @@ export function SideBar(props: {
                             tops: []
                         });
                         setEdges([]);
+                        setTour([]);
                         setCover({depth: 1, vertices: []});
                         setData(graph)
                     }}>Normal</Button>
@@ -235,6 +267,7 @@ export function SideBar(props: {
                             tops: []
                         });
                         setEdges([]);
+                        setTour([]);
                         setCover({depth: 1, vertices: []});
                         setData(treeGraph);
                         if (Object.keys(treeGraph).length === 0) {
@@ -249,6 +282,7 @@ export function SideBar(props: {
                             tops: []
                         });
                         setEdges([]);
+                        setTour([]);
                         setCover({depth: 1, vertices: []});
                         setData(weightedGraph);
                         if (Object.keys(weightedGraph).length === 0) {
@@ -511,17 +545,23 @@ export function SideBar(props: {
                     }}
                 >
                     <H6>
-                        Christofides algorithm
+                        Traveling salesman problem
                         <Button
                             minimal
                             small
-                            icon={christofidesOpen ? 'chevron-up' : 'chevron-down'}
-                            onClick={() => setchristofidesOpen(!christofidesOpen)}
+                            icon={travelingOpen ? 'chevron-up' : 'chevron-down'}
+                            onClick={() => setTravelingOpen(!travelingOpen)}
                         />
                     </H6>
-                    <Collapse isOpen={christofidesOpen} keepChildrenMounted>
+                    <Collapse isOpen={travelingOpen} keepChildrenMounted>
                         <ButtonGroup style={{marginBottom: '15px'}}>
                             <Button onClick={() => getMinimumSpanningTree()}>Minimum spanning tree</Button>
+                        </ButtonGroup>
+                        <ButtonGroup style={{marginBottom: '15px'}}>
+                            <Button onClick={() => getEulerianMultigraph()}>Eulerian multigraph</Button>
+                        </ButtonGroup>
+                        <ButtonGroup style={{marginBottom: '15px'}}>
+                            <Button onClick={() => getChristofides()}>Christofides Algorithm</Button>
                         </ButtonGroup>
                     </Collapse>
                 </div>

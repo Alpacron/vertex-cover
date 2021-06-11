@@ -19,7 +19,8 @@ export function App(): JSX.Element {
         pendant: [],
         tops: []
     });
-    const [edges, setEdges] = useState<number[][]>([])
+    const [edges, setEdges] = useState<number[][]>([]);
+    const [tour, setTour] = useState<number[]>([]);
     const [maxChildren, setMaxChildren] = useState<number>(2);
     const [isTree, setIsTree] = useState<boolean>(false);
 
@@ -116,6 +117,7 @@ export function App(): JSX.Element {
             kernel={kernel}
             setKernel={setKernel}
             setEdges={setEdges}
+            setTour={setTour}
             maxChildren={maxChildren}
             setMaxChildren={setMaxChildren}
             isTree={isTree}
@@ -125,7 +127,7 @@ export function App(): JSX.Element {
                 <Graph
                     id='graph-id'
                     ref={graphRef}
-                    data={convertToD3Graph(data, cover, kernel, edges)}
+                    data={convertToD3Graph(data, cover, kernel, tour, edges)}
                     onClickNode={onClickNode}
                     config={{
                         staticGraph: false,

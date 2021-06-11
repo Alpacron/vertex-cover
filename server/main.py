@@ -171,7 +171,20 @@ def kernelization(g: TopsItem):
 class GraphItem(BaseModel):
     graph: Any
 
+
 @app.post("/minimum-spanning-tree")
 def minimum_spanning_tree(g: GraphItem):
     graph = WeightedGraph(g.graph)
     return graph.kruskal_mst()
+
+
+@app.post("/eulerian-multigraph")
+def eulerian_multigraph(g: GraphItem):
+    graph = WeightedGraph(g.graph)
+    return graph.eulerian_multigraph()
+
+
+@app.post("/christofides-algorithm")
+def eulerian_multigraph(g: GraphItem):
+    graph = WeightedGraph(g.graph)
+    return graph.christofides_algorithm()

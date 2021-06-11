@@ -20,6 +20,7 @@ export function MainPage(props: {
     isTree: boolean;
     setIsTree: Dispatch<SetStateAction<boolean>>;
     setEdges: Dispatch<SetStateAction<number[][]>>;
+    setTour: Dispatch<SetStateAction<number[]>>;
 }): JSX.Element {
     const server = process.env.REACT_APP_SERVER_URL;
     const [coverDepth, setCoverDepth] = useState<number>(1);
@@ -98,6 +99,7 @@ export function MainPage(props: {
                     kernel={props.kernel}
                     setKernel={props.setKernel}
                     setEdges={props.setEdges}
+                    setTour={props.setTour}
                     coverDepth={coverDepth}
                     setCoverDepth={setCoverDepth}
                     doFetch={doFetch}

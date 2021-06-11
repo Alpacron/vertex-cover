@@ -27,6 +27,7 @@ export function convertToD3Graph(
     graph: any,
     cover: { depth: number; vertices: number[] },
     kernel: { isolated: number[]; pendant: number[]; tops: number[] },
+    tour: number[],
     edges: number[][]
 ): GraphData<any, any> {
     const nodes: { id: number; color: string }[] = [];
@@ -41,6 +42,8 @@ export function convertToD3Graph(
         edges.forEach((edge) => covered.push({source: edge[0], target: edge[1]}));
     }
 
+    // TODO: directed graph
+    console.log(tour)
     Object.keys(graph).forEach((vertex: string) => {
         let color = '#d3d3d3';
         if (cover.vertices.includes(+vertex)) color = '#3f51b5';
@@ -50,15 +53,14 @@ export function convertToD3Graph(
 
         nodes.push({id: +vertex, color: color});
 
-        console.log(edges)
         graph[vertex].forEach((edge: number | [number, number]) => {
             const e = Array.isArray(edge) ? edge[0] : edge;
             const w = Array.isArray(edge) ? edge[1] : 0;
             // if link hasn't been added yet
             if (e > +vertex) {
                 // check if it is covered
-                const isCovered = covered.some((c) => c.source === +vertex || c.source === e) &&
-                    covered.some((c) => c.target === +vertex || c.target === e);
+                const isCovered = covered.some((c) => c.source === +vertex && c.target === e) ||
+                    covered.some((c) => c.target === +vertex && c.source === e);
                 // add link to link
                 links.push({
                     text: w != 0 ? w.toString() : "",
