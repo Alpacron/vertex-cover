@@ -59,6 +59,38 @@ export function App(): JSX.Element {
     }, [width, height, data, setData, arrangeTree, isTree]);
 
     useEffect(() => {
+        if(kernel.isolated.length > 0 || kernel.pendant.length > 0 || kernel.tops.length > 0) {
+            setCover({depth: cover.depth, vertices: []});
+            setEdges([]);
+            setTour([]);
+        }
+    }, [kernel]);
+
+    useEffect(() => {
+        if  (cover.vertices.length > 0) {
+            setKernel({isolated: [], pendant: [], tops: []});
+            setEdges([]);
+            setTour([]);
+        }
+    }, [cover]);
+
+    useEffect(() => {
+        if (edges.length > 0) {
+            setKernel({isolated: [], pendant: [], tops: []});
+            setCover({depth: cover.depth, vertices: []});
+            setTour([]);
+        }
+    }, [edges]);
+
+    useEffect(() => {
+        if (tour.length > 0) {
+            setKernel({isolated: [], pendant: [], tops: []});
+            setCover({depth: cover.depth, vertices: []});
+            setEdges([]);
+        }
+    }, [tour]);
+
+    useEffect(() => {
         setData({ '0': [1], '1': [0] });
     }, []);
 
@@ -130,6 +162,7 @@ export function App(): JSX.Element {
                     data={convertToD3Graph(data, cover, kernel, tour, edges)}
                     onClickNode={onClickNode}
                     config={{
+                        directed: tour.length > 0,
                         staticGraph: false,
                         height: graphBoundingRef.current != null ? graphBoundingRef.current.offsetHeight : 0,
                         width: graphBoundingRef.current != null ? graphBoundingRef.current.offsetWidth : 0,
