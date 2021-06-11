@@ -44,7 +44,6 @@ export function SideBar(props: {
     const [weightedVertices, setWeightedVertices] = useState<number>(5);
     const [nodes, setNodes] = useState<number>(3);
     const [probability, setProbability] = useState<number>(0.5);
-    const [weightedProbability, setWeightedProbability] = useState<number>(1);
     const [graphType, setGraphType] = useState<"normal" | "tree" | "weighted">("normal");
     const [graph, setGraph] = useState<any>({});
     const [treeGraph, setTreeGraph] = useState<any>({});
@@ -107,7 +106,7 @@ export function SideBar(props: {
             'POST',
             {
                 vertices: weightedVertices,
-                probability: weightedProbability
+                probability: 1
             },
             (res) => {
                 setWeightedGraph(res.data);
@@ -302,14 +301,14 @@ export function SideBar(props: {
                             onValueChange={n => graphType == "normal"? setVertices(n) : setWeightedVertices(n)}
                         />
                     </FormGroup>
-                    <FormGroup label="Density of edges" labelFor="probability">
+                    <FormGroup label="Density of edges" labelFor="probability" style={{display: graphType != "normal"? 'none' : ''}}>
                         <NumericInput
                             min={0}
                             max={1}
                             stepSize={0.1}
                             id="probability"
-                            value={graphType == "normal"? probability : weightedProbability}
-                            onValueChange={n => graphType == "normal"? setProbability(n) : setWeightedProbability(n)}
+                            value={probability}
+                            onValueChange={setProbability}
                         />
                     </FormGroup>
                     <ButtonGroup style={{marginRight: '1em', marginBottom: '15px'}}>
