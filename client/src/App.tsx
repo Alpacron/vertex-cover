@@ -94,12 +94,6 @@ export function App(): JSX.Element {
         setData({ '0': [1], '1': [0] });
     }, []);
 
-    useEffect(() => {
-        if (tour.length > 0) {
-            setData(data);
-        }
-    }, [data]);
-
     const onClickNode = function(nodeId: string) {
         if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
             // const e = Array.isArray(edge) ? edge[0] : edge;
@@ -168,8 +162,10 @@ export function App(): JSX.Element {
                     data={convertToD3Graph(data, cover, kernel, tour, edges)}
                     onClickNode={onClickNode}
                     config={{
+
                         directed: tour.length > 0,
                         staticGraph: false,
+                        staticGraphWithDragAndDrop: tour.length > 0,
                         height: graphBoundingRef.current != null ? graphBoundingRef.current.offsetHeight : 0,
                         width: graphBoundingRef.current != null ? graphBoundingRef.current.offsetWidth : 0,
                         minZoom: 0.5,
