@@ -181,7 +181,7 @@ class WeightedGraph:
 
         return []
 
-    def christofides_algorithm(self) -> list[int]:
+    def eulerian_multigraph(self):
         # Number of vertices
         n = len(self.graph.graph)
 
@@ -195,6 +195,12 @@ class WeightedGraph:
         m = self.perfect_matching(o, self.graph_to_edges(s))
         # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
         e = self.combine_edges(t, m)
+
+        return e
+
+    def christofides_algorithm(self) -> list[int]:
+        # Unite matching and spanning tree T ∪ M to form an Eulerian multigraph
+        e = self.eulerian_multigraph()
         # Calculate Euler tour
         et = self.calculate_euler_tour(e)
         # Remove repeated vertices, giving the algorithm's output
