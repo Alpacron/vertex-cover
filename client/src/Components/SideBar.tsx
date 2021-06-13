@@ -349,23 +349,6 @@ export function SideBar(props: {
                     <ButtonGroup style={{ marginRight: '1em', marginBottom: '15px' }}>
                         <Button onClick={generateTree}>Generate tree</Button>
                     </ButtonGroup>
-                    <H6 style={{ color: '#137CBD' }}>Approximation vertex cover for a tree</H6>
-                    <ButtonGroup>
-                        <Button
-                            onClick={() => {
-                                getVertexCover('/tree-cover', 'Approximation vertex cover for a tree');
-                            }}
-                        >
-                            Approximation vertex cover for a tree
-                        </Button>
-                    </ButtonGroup>
-                    <p style={{ marginTop: '10px' }}>
-                        {vertexCoverApproximationTreeTime > 0
-                            ? 'Approximation of vertex cover for a tree took: ' +
-                              vertexCoverApproximationTreeTime +
-                              ' seconds'
-                            : 'Approximation has not been run yet.'}
-                    </p>
                 </div>
                 <div
                     style={{
@@ -411,7 +394,7 @@ export function SideBar(props: {
                 </div>
                 <div
                     style={{
-                        display: graphType == 'normal' ? 'flex' : 'none',
+                        display: graphType != 'weighted' ? 'flex' : 'none',
                         flexDirection: 'column'
                     }}
                 >
@@ -499,6 +482,23 @@ export function SideBar(props: {
                                 ? 'Approximation of vertex cover took: ' + vertexCoverApproximationTime + ' seconds'
                                 : 'Approximation has not been run yet.'}
                         </p>
+                        <H6 style={{ color: '#137CBD' }}>Approximation vertex cover for a tree</H6>
+                        <ButtonGroup>
+                            <Button
+                                onClick={() => {
+                                    getVertexCover('/tree-cover', 'Approximation vertex cover for a tree');
+                                }}
+                            >
+                                Approximation vertex cover for a tree
+                            </Button>
+                        </ButtonGroup>
+                        <p style={{ marginTop: '10px' }}>
+                            {vertexCoverApproximationTreeTime > 0
+                                ? 'Approximation of vertex cover for a tree took: ' +
+                                vertexCoverApproximationTreeTime +
+                                ' seconds'
+                                : 'Approximation has not been run yet.'}
+                        </p>
                     </Collapse>
                 </div>
                 <div
@@ -517,39 +517,41 @@ export function SideBar(props: {
                         />
                     </H6>
                     <Collapse isOpen={kernelizationOpen} keepChildrenMounted>
-                        <H6 style={{ color: '#137CBD' }}>Isolated vertices</H6>
-                        <FormGroup
-                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-                            label="Number of isolated vertices"
-                        >
-                            <ButtonGroup style={{ marginLeft: '1em' }}>
-                                <Button onClick={() => putGraphResponse('/decrease-isolated')}>-</Button>
-                                <Button onClick={() => putGraphResponse('/increase-isolated')}>+</Button>
-                            </ButtonGroup>
-                        </FormGroup>
-                        <H6 style={{ color: '#137CBD' }}>Pendants</H6>
-                        <FormGroup
-                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-                            label="Number of pendants"
-                        >
-                            <ButtonGroup style={{ marginLeft: '1em' }}>
-                                <Button onClick={() => putGraphResponse('/decrease-pendants')}>-</Button>
-                                <Button onClick={() => putGraphResponse('/increase-pendants')}>+</Button>
-                            </ButtonGroup>
-                        </FormGroup>
-                        <H6 style={{ color: '#137CBD' }}>Tops</H6>
-                        <FormGroup label="Vertex degree" labelFor="tops" labelInfo="(k)">
-                            <NumericInput min={0} id="tops" value={vertexDegree} onValueChange={setVertexDegree} />
-                        </FormGroup>
-                        <FormGroup
-                            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
-                            label="Number of tops"
-                        >
-                            <ButtonGroup style={{ marginLeft: '1em' }}>
-                                <Button onClick={() => putGraphResponse('/decrease-tops')}>-</Button>
-                                <Button onClick={() => putGraphResponse('/increase-tops')}>+</Button>
-                            </ButtonGroup>
-                        </FormGroup>
+                        <div style={{display: graphType == 'normal'? '' : 'none'}}>
+                            <H6 style={{ color: '#137CBD' }}>Isolated vertices</H6>
+                            <FormGroup
+                                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                                label="Number of isolated vertices"
+                            >
+                                <ButtonGroup style={{ marginLeft: '1em' }}>
+                                    <Button onClick={() => putGraphResponse('/decrease-isolated')}>-</Button>
+                                    <Button onClick={() => putGraphResponse('/increase-isolated')}>+</Button>
+                                </ButtonGroup>
+                            </FormGroup>
+                            <H6 style={{ color: '#137CBD' }}>Pendants</H6>
+                            <FormGroup
+                                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                                label="Number of pendants"
+                            >
+                                <ButtonGroup style={{ marginLeft: '1em' }}>
+                                    <Button onClick={() => putGraphResponse('/decrease-pendants')}>-</Button>
+                                    <Button onClick={() => putGraphResponse('/increase-pendants')}>+</Button>
+                                </ButtonGroup>
+                            </FormGroup>
+                            <H6 style={{ color: '#137CBD' }}>Tops</H6>
+                            <FormGroup label="Vertex degree" labelFor="tops" labelInfo="(k)">
+                                <NumericInput min={0} id="tops" value={vertexDegree} onValueChange={setVertexDegree} />
+                            </FormGroup>
+                            <FormGroup
+                                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+                                label="Number of tops"
+                            >
+                                <ButtonGroup style={{ marginLeft: '1em' }}>
+                                    <Button onClick={() => putGraphResponse('/decrease-tops')}>-</Button>
+                                    <Button onClick={() => putGraphResponse('/increase-tops')}>+</Button>
+                                </ButtonGroup>
+                            </FormGroup>
+                        </div>
                         <H6 style={{ color: '#137CBD' }}>Kernelization</H6>
                         <ButtonGroup style={{ marginBottom: '15px' }}>
                             <Button onClick={() => getKernelization()}>Perform kernelization</Button>
