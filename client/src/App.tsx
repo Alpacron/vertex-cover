@@ -19,6 +19,8 @@ export function App(): JSX.Element {
         pendant: [],
         tops: []
     });
+    const [edges, setEdges] = useState<number[][]>([]);
+    const [tour, setTour] = useState<number[]>([]);
     const [maxChildren, setMaxChildren] = useState<number>(2);
     const [isTree, setIsTree] = useState<boolean>(false);
 
@@ -43,7 +45,7 @@ export function App(): JSX.Element {
             Object.keys(graphRef.current.state.nodes).forEach((node: any) => {
                 if (graphRef.current != null && graphBoundingRef.current != null) {
                     graphRef.current.state.nodes[node].y =
-                        highestY + (250 * maxChildren) * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
+                        highestY + 250 * maxChildren * Math.ceil(graphRef.current.state.nodes[node].id / maxChildren);
                 }
             });
         }
@@ -57,18 +59,51 @@ export function App(): JSX.Element {
     }, [width, height, data, setData, arrangeTree, isTree]);
 
     useEffect(() => {
+        if (kernel.isolated.length > 0 || kernel.pendant.length > 0 || kernel.tops.length > 0) {
+            setCover({ depth: cover.depth, vertices: [] });
+            setEdges([]);
+            setTour([]);
+        }
+    }, [cover.depth, kernel]);
+
+    useEffect(() => {
+        if (cover.vertices.length > 0) {
+            setKernel({ isolated: [], pendant: [], tops: [] });
+            setEdges([]);
+            setTour([]);
+        }
+    }, [cover]);
+
+    useEffect(() => {
+        if (edges.length > 0) {
+            setKernel({ isolated: [], pendant: [], tops: [] });
+            setCover({ depth: cover.depth, vertices: [] });
+            setTour([]);
+        }
+    }, [cover.depth, edges]);
+
+    useEffect(() => {
+        if (tour.length > 0) {
+            setKernel({ isolated: [], pendant: [], tops: [] });
+            setCover({ depth: cover.depth, vertices: [] });
+            setEdges([]);
+        }
+    }, [cover.depth, tour]);
+
+    useEffect(() => {
         setData({ '0': [1], '1': [0] });
     }, []);
 
-    const onClickNode = function(nodeId: string) {
+    const onClickNode = function (nodeId: string) {
         if (kernel.isolated.length == 0 && kernel.pendant.length == 0 && kernel.tops.length == 0) {
+            // const e = Array.isArray(edge) ? edge[0] : edge;
+
             const c = Object.assign([], cover.vertices);
             if (c.indexOf(+nodeId, 0) > -1) c.splice(cover.vertices.indexOf(+nodeId, 0), 1);
             else c.push(+nodeId);
             setCover({ depth: cover.depth, vertices: c });
         }
     };
-
 
     function centerNodes() {
         if (
@@ -112,23 +147,31 @@ export function App(): JSX.Element {
             setCover={setCover}
             kernel={kernel}
             setKernel={setKernel}
+            setEdges={setEdges}
+            setTour={setTour}
             maxChildren={maxChildren}
             setMaxChildren={setMaxChildren}
             isTree={isTree}
             setIsTree={setIsTree}
         >
-            <div className='container__graph-area' ref={graphBoundingRef}>
+            <div className="container__graph-area" ref={graphBoundingRef}>
                 <Graph
-                    id='graph-id'
+                    id="graph-id"
                     ref={graphRef}
-                    data={convertToD3Graph(data, cover, kernel)}
+                    data={convertToD3Graph(data, cover, kernel, tour, edges)}
                     onClickNode={onClickNode}
                     config={{
+                        directed: tour.length > 0,
                         staticGraph: false,
+                        staticGraphWithDragAndDrop: tour.length > 0,
                         height: graphBoundingRef.current != null ? graphBoundingRef.current.offsetHeight : 0,
                         width: graphBoundingRef.current != null ? graphBoundingRef.current.offsetWidth : 0,
                         minZoom: 0.5,
-                        maxZoom: 8
+                        maxZoom: 8,
+                        link: {
+                            labelProperty: 'text',
+                            renderLabel: true
+                        }
                     }}
                 />
             </div>

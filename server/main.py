@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from typing import Any
 
 from tree import Tree
+from weighted_graph import WeightedGraph
 
 app = FastAPI(
     title="Vertex cover",
@@ -29,6 +30,13 @@ def generate(item: GenerateItem):
     return graph.graph
 
 
+@app.post("/generate-weighted")
+def generate_weighted(item: GenerateItem):
+    weighted = WeightedGraph()
+    weighted.generate_graph(item.vertices, item.probability)
+    return weighted.graph.graph
+
+
 class GenerateTreeItem(BaseModel):
     nodes: int
     max_children: int
@@ -47,8 +55,7 @@ class UpdateItem(BaseModel):
 
 @app.put("/get-matrix")
 def get_matrix(g: UpdateItem):
-    graph = Graph(g.graph)
-    return json.dumps(graph.to_adj_matrix())
+    return json.dumps(Graph(g.graph).to_adj_matrix())
 
 
 @app.put("/connect-sub")
@@ -155,3 +162,25 @@ def decrease_isolated(g: UpdateItem):
 def kernelization(g: TopsItem):
     graph = Graph(g.graph)
     return graph.visualize_kernelization(g.k)
+
+
+class GraphItem(BaseModel):
+    graph: Any
+
+
+@app.post("/minimum-spanning-tree")
+def minimum_spanning_tree(g: GraphItem):
+    graph = WeightedGraph(g.graph)
+    return graph.kruskal_mst()
+
+
+@app.post("/eulerian-multigraph")
+def eulerian_multigraph(g: GraphItem):
+    graph = WeightedGraph(g.graph)
+    return graph.eulerian_multigraph()
+
+
+@app.post("/christofides-algorithm")
+def eulerian_multigraph(g: GraphItem):
+    graph = WeightedGraph(g.graph)
+    return graph.christofides_algorithm()
